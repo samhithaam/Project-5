@@ -1,0 +1,485 @@
+import java.io.*;
+import java.util.*;
+
+
+class UserProfile{
+    String userId;
+    String passWord;
+
+    public UserProfile(String userId, String passWord) {
+        this.userId = userId;
+        this.passWord = passWord;
+    }
+
+
+    public String getUserId() {
+        return userId;
+    }
+
+    public String getPassWord() {
+        return passWord;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        UserProfile that = (UserProfile) o;
+        return Objects.equals(userId, that.userId) && Objects.equals(passWord, that.passWord);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(userId, passWord);
+    }
+
+    @Override
+    public String toString() {
+        return "UserProfile{" +
+                "userId='" + userId + '\'' +
+                ", passWord='" + passWord + '\'' +
+                '}';
+    }
+}
+
+/**
+ * User.java
+ *
+ * If user creates an account and then logs out, they are still able to log back in
+ * as data is stored in text files.
+ *
+ * @author Samhitha Mupharaphu
+ * @version 12/3/2021
+ */
+public class User {
+
+    private static final int STUDENT = 1;
+    private static final int TEACHER = 2;
+
+    private static List<UserProfile> studentUsernames = Collections.synchronizedList(new ArrayList<>());
+    private static List<UserProfile> teacherUsernames = Collections.synchronizedList(new ArrayList<>());
+
+    private final static Object lock = new Object();
+
+    static {
+        readUserFiles();
+    }
+
+    public User() {
+    }
+
+    public static void main(String[] args) throws Exception {
+    }
+
+    /**
+     * Get contents of file as an array list..
+     * @param fileName
+     * @return
+     */
+    private static  ArrayList<UserProfile> readFile(String fileName) {
+        ArrayList<UserProfile> fileContents = new ArrayList<>();
+        File file = new File(fileName);
+        if( ! file.exists() ) {
+            return fileContents;
+        }
+        System.out.println("File : " + fileName + "exists. Loading profiles.. ");
+        try (BufferedReader bfr = new BufferedReader(new FileReader(fileName))) {
+            String line = new String("");
+            while ((line = bfr.readLine()) != null) {
+                UserProfile userProfile;
+                String[] tokens = line.split(",");
+                if( tokens != null && tokens.length == 2 ) {
+                    userProfile = new UserProfile(tokens[0], tokens[1]);
+                    fileContents.add(userProfile);
+                }
+            }
+            System.out.println("Loading profiles completed.. ");
+            return fileContents;
+        } catch (IOException e) {
+            e.printStackTrace();
+            return null;
+        }
+    }
+
+    /**
+     * Load student & teacher profiles from files.
+     */
+    private static void readUserFiles() {
+        synchronized ( lock ) {
+            studentUsernames = readFile("src/StudentUsernames.txt");
+            teacherUsernames = readFile("src/TeacherUsernames.txt");
+        }
+    }
+
+    /**
+     * Takes list of user profiles and write to a file
+     * @param list
+     * @param fileName
+     * @return
+     * @throws Exception
+     */
+    private static boolean writeFile(List<UserProfile> list, String fileName) throws Exception {
+        System.out.println("Writing profiles to file "+ fileName);
+        try (PrintWriter pw = new PrintWriter(new FileWriter(fileName))) {
+            for ( UserProfile line : list) {
+                String entries = String.format( "%s,%s", line.getUserId(), line.getPassWord());
+                pw.println(entries);
+            }
+            pw.flush();
+            return true;
+        } catch (IOException e) {
+            e.printStackTrace();
+            throw e;
+        }
+    }
+
+    /**
+     * Writes all of  the userprofiles from array list to a file..
+     * @throws Exception
+     */
+    private static void writeUserFiles() throws Exception{
+        synchronized (lock) {
+            writeFile(studentUsernames, "src/StudentUsernames.txt");
+            writeFile(teacherUsernames, "src/TeacherUsernames.txt");
+        }
+    }
+
+    private static boolean writeFile(UserProfile userProfile, String fileName) throws Exception {
+        System.out.println("Writing profiles to file "+ fileName);
+        try (PrintWriter pw = new PrintWriter(new FileWriter(fileName, true))) {
+            String entries = String.format( "%s,%s", userProfile.getUserId(), userProfile.getPassWord());
+            pw.println(entries);
+            pw.flush();
+            return true;
+        }
+        catch (IOException e) {
+            e.printStackTrace();
+            throw e;
+        }
+    }
+
+    /**
+     * Write student users to a file
+     * @param userProfile
+     * @throws Exception
+     */
+    public  static void writeStudentUserFiles(UserProfile userProfile) throws Exception{
+        synchronized ( lock ) {
+            writeFile(userProfile, "src/StudentUsernames.txt");
+        }
+    }
+
+    /**
+     * Write teachers list to a file
+     * @param userProfile
+     * @throws Exception
+     */
+    public static void writeTeacherUserFiles(UserProfile userProfile) throws Exception{
+        synchronized ( lock ) {
+            writeFile(userProfile, "src/TeacherUsernames.txt");
+        }
+    }
+
+    /**
+     * Add a student to the array list and write to file.
+     * @param userName
+     * @param passWord
+     * @throws Exception
+     */
+    private static  void addStudent(String userName, String passWord) throws Exception{
+        UserProfile userProfile = new UserProfile(userName, passWord);
+        synchronized ( studentUsernames ) {
+            studentUsernames.add(userProfile);
+            writeStudentUserFiles(userProfile);
+        }
+    }
+
+    private static void addTeacher( String userName, String passWord ) throws Exception {
+        UserProfile userProfile = new UserProfile(userName, passWord);
+        synchronized ( teacherUsernames ) {
+            teacherUsernames.add(userProfile);
+            writeTeacherUserFiles(userProfile);
+        }
+    }
+
+    /**
+     * Creates a student/teacher profile and writes to file
+     * @param teacherOrStudent
+     * @param userName
+     * @param passWord
+     * @return
+     * @throws Exception
+     */
+    public static boolean createAccount( int teacherOrStudent, String userName, String passWord ) throws Exception {
+        if( accountExists(teacherOrStudent,userName, passWord )) {
+            System.out.println( "Account exist !!");
+            return false;
+        }
+        if (teacherOrStudent == STUDENT) {
+            boolean isStudentPresent=false;
+            synchronized (studentUsernames ) {
+                if (studentUsernames != null && studentUsernames.size() > 0) {
+                    for (UserProfile userProfile : studentUsernames) {
+                        if (userProfile.equals( new UserProfile( userName, passWord))) {
+                            System.out.println(Thread.currentThread() + String.format("Username <%s> already exists, please try again. ", userName));
+                            isStudentPresent = true;
+                            break;
+                        }
+                    }
+                    if (!isStudentPresent) {
+                        addStudent(userName, passWord);
+                        return true;
+                    }
+                } else {
+                    //No student exists..
+                    if (studentUsernames != null) {
+                        System.out.println(Thread.currentThread() + String.format("Student username <%s> does not exist, creating..", userName));
+                        addStudent(userName, passWord);
+                        return true;
+                    }
+                }
+            }
+        } else if (teacherOrStudent == TEACHER) {
+            boolean isTeacherPresent = false;
+            synchronized (teacherUsernames) {
+                if (teacherUsernames != null && teacherUsernames.size() > 0) {
+                    for (UserProfile userProfile : teacherUsernames) {
+                        if (userProfile.equals( new UserProfile(userName, passWord ))) {
+                            System.out.println(Thread.currentThread() + String.format("Username <%s> already exists, please try again. ", userName));
+                            isTeacherPresent = true;
+                            break;
+                        }
+                    }
+                    if (!isTeacherPresent) {
+                        System.out.println(Thread.currentThread() + String.format("Teacher username <%s> does not exist, creating..", userName));
+                        addTeacher(userName, passWord);
+                        return true;
+                    }
+                } else {
+                    if (teacherUsernames != null) {
+                        addTeacher(userName, passWord);
+                        return true;
+                    }
+                }
+            }
+        }
+        else{
+            System.out.println("Invalid user account type. Need to be a teacher/student !!!");
+            return false;
+        }
+        return false;
+    }
+
+    /**
+     * Check if an account exists..
+     * @param teacherOrStudent
+     * @param userName
+     * @param passWord
+     * @return
+     * @throws Exception
+     */
+    public static boolean accountExists(int teacherOrStudent, String userName, String passWord) throws Exception {
+        if (teacherOrStudent == STUDENT) {
+            synchronized (studentUsernames ) {
+                if (studentUsernames != null && studentUsernames.size() > 0) {
+                    for (UserProfile userProfile : studentUsernames) {
+                        if (userProfile.equals( new UserProfile(userName, passWord))) {
+                            System.out.println(Thread.currentThread() + String.format("Username <%s>  exists", userName));
+                            return true;
+                        }
+                    }
+                    return false;
+                } else {
+                    return false;
+                }
+            }
+        } else if (teacherOrStudent == TEACHER) {
+            synchronized (teacherUsernames ) {
+                if (teacherUsernames != null && teacherUsernames.size() > 0) {
+                    for (UserProfile userProfile : teacherUsernames) {
+                        if (userProfile.equals( new UserProfile(userName, passWord) )) {
+                            System.out.println(Thread.currentThread() + String.format("Username <%s>  exists", userName));
+                            return true;
+                        }
+                    }
+                    return false;
+                } else {
+                    return false;
+                }
+            }
+        }
+        else {
+            System.out.println("Invalid user account type. Need to be a teacher/student !!!");
+            return false;
+        }
+    }
+
+    /**
+     * delete a student / teacher account
+     * @param teacherOrStudent
+     * @param userName
+     * @param passWord
+     * @return
+     * @throws Exception
+     */
+    public static boolean deleteAccount(int teacherOrStudent, String userName, String passWord) throws Exception {
+        if( ! accountExists(teacherOrStudent,userName, passWord )) {
+            System.out.println( "Account does not exist! Cannot delete.");
+            return false;
+        }
+
+        if ( teacherOrStudent == STUDENT) {
+            synchronized (studentUsernames ) {
+                if (studentUsernames == null || studentUsernames.isEmpty()) {
+                    System.out.println("No student accounts exist. Cannot delete.");
+                    return false;
+                }
+                UserProfile userProfile = new UserProfile(userName, passWord);
+                if (studentUsernames.contains(userProfile)) {
+                    System.out.println("Student account " + userName + "being removed");
+                    studentUsernames.remove(userProfile);
+                    writeUserFiles();
+                    return true;
+                }
+            }
+        } else if (teacherOrStudent == TEACHER) {
+            synchronized (teacherUsernames ) {
+                if (teacherUsernames == null || teacherUsernames.isEmpty()) {
+                    System.out.println("No teacher accounts exist. Cannot delete.");
+                    return false;
+                }
+                UserProfile userProfile = new UserProfile(userName, passWord);
+                if (teacherUsernames.contains(userProfile)) {
+                    System.out.println("Teacher account " + userName + "being removed");
+                    teacherUsernames.remove(userProfile);
+                    writeUserFiles();
+                    return true;
+                }
+            }
+        }  else {
+            System.out.println("Invalid user account type. Need to be a teacher/student !!!");
+            return false;
+        }
+        return false;
+    }
+
+    /**
+     * Edits an account..
+     * @param teacherOrStudent
+     * @param currentUserName
+     * @param currentPassword
+     * @param newUserName
+     * @param newPassword
+     * @return
+     * @throws Exception
+     */
+
+    public static boolean editAccount(int teacherOrStudent, String currentUserName, String currentPassword, String newUserName, String newPassword) throws Exception {
+        if( ! accountExists(teacherOrStudent,currentUserName, currentPassword )) {
+            System.out.println( "Account does not exists. Cannot edit !!! ");
+            return false;
+        }
+        if (teacherOrStudent == STUDENT) {
+            synchronized (studentUsernames) {
+                if (studentUsernames == null || studentUsernames.isEmpty()) {
+                    System.out.println("No student accounts exist. Cannot edit");
+                    return false;
+                }
+                UserProfile userProfile = new UserProfile(currentUserName, currentPassword);
+                if (studentUsernames.contains(userProfile)) {
+                    UserProfile newUserProfile = new UserProfile(newUserName, newPassword);
+                    if (studentUsernames.contains(newUserProfile)) {
+                        System.out.println(" Account details exists. Cannot modify. Please try again..");
+                        return false;
+                    } else {
+                        System.out.println("Student account " + currentUserName + "being modified");
+                        studentUsernames.remove(userProfile);
+                        studentUsernames.add(newUserProfile);
+                        writeUserFiles();
+                        System.out.println("Student account " + newUserName + "modified successfully");
+                        return true;
+                    }
+                } else {
+                    System.out.println("Student account/password combination " + currentUserName + "does not match. Cannot modify!!");
+                    return false;
+                }
+            }
+        } else if (teacherOrStudent == TEACHER) {
+            synchronized(teacherUsernames) {
+                if (teacherUsernames == null || teacherUsernames.isEmpty()) {
+                    System.out.println("No teacher accounts exist. Cannot delete");
+                    return false;
+                }
+                UserProfile userProfile = new UserProfile(currentUserName, currentPassword);
+                if (teacherUsernames.contains(userProfile)) {
+                    System.out.println("Teacher account exists. Enter new details to modify ");
+                    UserProfile newUserProfile = new UserProfile(newUserName, newPassword);
+                    if (teacherUsernames.contains(newUserProfile)) {
+                        System.out.println(" Account details exists. Cannot modify. Please try again..");
+                        return false;
+                    } else {
+                        System.out.println("Teacher account " + currentUserName + "being modified");
+                        teacherUsernames.remove(userProfile);
+                        teacherUsernames.add(newUserProfile);
+                        writeUserFiles();
+                        System.out.println("Teacher account " + newUserName + "modified successfully");
+                        return true;
+                    }
+                } else {
+                    System.out.println("Teacher account/password combination " + currentUserName + "does not match. Cannot delete!!");
+                    return false;
+                }
+            }
+        } else {
+            System.out.println("Invalid user account type. Need to be a teacher/student !!!");
+            return false;
+        }
+    }
+
+    /**
+     * return whether an account exists
+     * @param teacherOrStudent
+     * @param userName
+     * @param passWord
+     * @return
+     * @throws Exception
+     */
+    public static boolean signIn(int teacherOrStudent,String userName, String passWord) throws Exception {
+        if( ! accountExists(teacherOrStudent,userName, passWord )) {
+            System.out.println( "Account does not exists. Cannot signing !!! ");
+            return false;
+        }
+
+        if (teacherOrStudent == STUDENT) {
+            synchronized (studentUsernames) {
+                if (studentUsernames == null || studentUsernames.isEmpty()) {
+                    System.out.println("No student accounts exist. Please create an account before signing in");
+                    return false;
+                }
+
+                UserProfile userProfile = new UserProfile(userName, passWord);
+                if (studentUsernames.contains(userProfile)) {
+                    System.out.println( String.format( "Student <%s> successfully signed in", userName));
+                    return true;
+                } else {
+                    return false;
+                }
+            }
+        } else if (teacherOrStudent == TEACHER) {
+            synchronized (teacherUsernames) {
+                if (teacherUsernames == null || teacherUsernames.isEmpty()) {
+                    System.out.println("No teacher accounts exist. Please create an account before signing in");
+                    return false;
+                }
+                UserProfile userProfile = new UserProfile(userName, passWord);
+                if (teacherUsernames.contains(userProfile)) {
+                    System.out.println( String.format( "Teacher <%s> successfully signed in", userName));
+                    return true;
+                } else {
+                    return false;
+                }
+            }
+        }
+        return false;
+    }
+}
