@@ -139,8 +139,6 @@ public class StudentGUI extends JComponent implements ActionListener, Runnable {
         });
         submitBtn4.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
-                JOptionPane.showMessageDialog(frame, "Your quiz has been submitted!",
-                        "Quiz Submitted", JOptionPane.INFORMATION_MESSAGE);
                 //System.out.println("inside submit button click");
                 submitBtn4Function();
 
@@ -183,7 +181,7 @@ public class StudentGUI extends JComponent implements ActionListener, Runnable {
                 cPanel.add(new JLabel("There aren't any submissions yet!"));
                 return;
             }
-            int[] pointValues = {1,1, 1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1};
+            int[] pointValues = {1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1};
             int totalPoints = 0;
 
             for (int i = 0; i < studentQuizanswers.size(); i += 3) {
@@ -297,12 +295,13 @@ public class StudentGUI extends JComponent implements ActionListener, Runnable {
             wr.write(s + "\n");
         }
         wr.close();
+        JOptionPane.showMessageDialog(null, "Your quiz has been submitted!",
+                "Quiz Submitted", JOptionPane.INFORMATION_MESSAGE);
         //System.out.println("submitBtn3  selected");
     }
 
     protected void submitBtn4Function() {
-        JOptionPane.showMessageDialog(null, "Your quiz has been submitted!",
-                "Quiz Submitted", JOptionPane.INFORMATION_MESSAGE);
+
     }
 
     @Override
@@ -325,6 +324,7 @@ public class StudentGUI extends JComponent implements ActionListener, Runnable {
     }
 
     public void submitQuiz(String qName, HashMap qDetails) {
+
     }
 
     public static ArrayList<Integer> generateRandomNums(int start, int end, int length) {
