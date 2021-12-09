@@ -301,18 +301,14 @@ public class Teacher {
         panel.add(instructions);
         content.add(panel, BorderLayout.LINE_START);
 
-
         JButton createButton = new JButton("Create Quiz");
         panel.add(createButton);
-
 
         JButton editButton = new JButton("Edit Quiz");
         panel.add(editButton);
 
-
         JButton deleteButton = new JButton("Delete Quiz");
         panel.add(deleteButton);
-
 
         JButton viewSubmissionsButton = new JButton("View Submissions");
         panel.add(viewSubmissionsButton);
@@ -322,7 +318,6 @@ public class Teacher {
 
         JButton exitButton = new JButton("Exit");
         panel.add(exitButton);
-
 
         createButton.addActionListener(new ActionListener() {
             @Override
@@ -350,11 +345,17 @@ public class Teacher {
             @Override
             public void actionPerformed(ActionEvent e) {
                 if (Student.getStudentSubmissions().size() == 0) {
-                    System.out.println("There are no student submissions.");
+                    JOptionPane.showMessageDialog(null,
+                            "There are no student submissions.",
+                            "No Submissions Message",
+                            JOptionPane.INFORMATION_MESSAGE);
                 } else {
                     for (int i = 0; i < Student.getStudentSubmissions().size(); i++) {
                         if (Student.getStudentSubmissions().get(i) == null) {
-                            System.out.println("There is no input");
+                            JOptionPane.showMessageDialog(null,
+                                    "There is no input.",
+                                    "No Input Message",
+                                    JOptionPane.INFORMATION_MESSAGE);
                         } else {
                             System.out.println(Student.getStudentSubmissions().get(i));
                         }
@@ -362,7 +363,6 @@ public class Teacher {
                 }
             }
         });
-
 
         assignPointValuesButton.addActionListener(new ActionListener() {
             @Override
