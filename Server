@@ -1,0 +1,227 @@
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileReader;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.io.PrintWriter;
+import java.net.ServerSocket;
+import java.net.Socket;
+import java.util.ArrayList;
+
+public class Server implements Runnable {
+
+    private final Socket socket;
+    // variables are private and static
+    private static ArrayList<String> studentUsernames = new ArrayList<>();
+    private static ArrayList<String> studentPasswords = new ArrayList<>();
+    private static ArrayList<String> teacherUsernames = new ArrayList<>();
+    private static ArrayList<String> teacherPasswords = new ArrayList<>();
+
+
+    public Server(Socket socket) {
+        this.socket = socket;
+    }
+
+    public static void main(String[] args) throws IOException {
+        readAllFiles(); // updates contents of ArrayList if there is data that is stored in text file
+        ServerSocket serverSocket = new ServerSocket(8081);
+        while (true) {
+            Socket socket = serverSocket.accept();
+            Server server = new Server(socket);
+            new Thread(server).start();
+        }
+    }
+
+    public void run() {
+        BufferedReader reader = null;
+        try {
+            reader = new BufferedReader(new InputStreamReader(socket.getInputStream()));
+            PrintWriter writer = new PrintWriter(socket.getOutputStream());
+
+            String command = reader.readLine();
+            if (command == null) {
+                System.out.println("null");
+            } else if (command.equals("createStudent")) {
+                createAccount(reader, writer, false);
+            } else if (command.equals("createTeacher")) {
+                createAccount(reader, writer, true);
+            } else if (command.equals("editStudent")) {
+                editAccount(reader, writer, false);
+            } else if (command.equals("editTeacher")) {
+                editAccount(reader, writer, true);
+            } else if (command.equals("deleteStudent")) {
+                deleteAccount(reader, writer, false);
+            } else if (command.equals("deleteTeacher")) {
+                deleteAccount(reader, writer, true);
+            } else if (command.equals("signinStudent")) {
+                signIn(reader, writer, false);
+            } else if (command.equals("signinTeacher")) {
+                signIn(reader, writer, true);
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    private void createAccount(BufferedReader reader, PrintWriter writer, boolean isTeacher) throws IOException {
+        String user = reader.readLine();
+        String pass = reader.readLine();
+        // check whether ArrayList is null to avoid NullPointerException
+        boolean exists = false;
+        ArrayList<String> usernames = isTeacher ? Server.teacherUsernames : Server.studentUsernames;
+        ArrayList<String> passwords = isTeacher ? Server.teacherPasswords : Server.studentPasswords;
+        if (usernames != null && usernames.size() > 0) {
+            for (String username : usernames) {
+                if (username.equals(user)) {
+                    writer.println("exists");
+                    writer.flush();
+                    exists = true;
+                    break;
+                }
+            }
+            if (!exists) {
+                usernames.add(user);
+                passwords.add(pass);
+                updateFiles();
+                writer.println("success");
+                writer.flush();
+            }
+        } else {
+            // can add without checking whether username already exists
+            // if size of studentUsernames ArrayList is 0
+            if (usernames != null) {
+                usernames.add(user);
+                passwords.add(pass);
+                updateFiles();
+                writer.println("success");
+                writer.flush();
+            }
+        }
+
+    }
+    private void updateFiles() {
+        // update files
+        writeFile(teacherUsernames, "src/TeacherUsernames.txt");
+        writeFile(studentUsernames, "src/StudentUsernames.txt");
+        writeFile(studentPasswords, "src/StudentPasswords.txt");
+        writeFile(teacherPasswords, "src/TeacherPasswords.txt");
+
+    }
+
+    private void editAccount(BufferedReader reader, PrintWriter writer, boolean isTeacher) throws IOException {
+    }
+
+    private void deleteAccount(BufferedReader reader, PrintWriter writer, boolean isTeacher) throws IOException {
+    }
+
+    private void signIn(BufferedReader reader, PrintWriter writer, boolean isTeacher) throws IOException {
+        String user = reader.readLine();
+        String pass = reader.readLine();
+        // check whether ArrayList is null to avoid NullPointerException
+        boolean exists = false;
+        ArrayList<String> usernames = isTeacher ? Server.teacherUsernames : Server.studentUsernames;
+        ArrayList<String> passwords = isTeacher ? Server.teacherPasswords : Server.studentPasswords;
+        int counter;
+        int indexUsername = 0;
+        int indexPassword = 0;
+        boolean usernameExists = false;
+        if (usernames != null && usernames.size() > 0) {
+            counter = 0;
+            for (String username : usernames) {
+                if (username.equals(user)) {
+                    usernameExists = true;
+                    indexUsername = counter;
+                    break;
+                }
+                counter++;
+            }
+            if (!usernameExists) {
+                writer.println("doesNotExist");
+                writer.flush();
+                // that username doesn't exist but there are other usernames, therefore, give user
+                // the chance to try again
+            } else {
+                if (passwords != null && passwords.size() > 0) {
+                    counter = 0;
+                    for (String password : passwords) {
+                        if (pass.equals(password)) {
+                            indexPassword = counter;
+                            if (indexUsername == indexPassword) {
+                                writer.println("success");
+                                writer.flush();
+                            } else {
+                                writer.println("passwordMismatch");
+                                writer.flush();
+                            }
+                            break; // break out of for loop after calling main method in Student.java or
+                            // printing error message
+                        }
+                        counter++;
+                    }
+                }
+            }
+        } else {
+            System.out.println("doesNotExist");
+            // no usernames exist, no need to prompt user again
+        }
+
+    }
+    private static void writeFile(ArrayList<String> list, String fileName) {
+        try (PrintWriter pw = new PrintWriter(new FileWriter(fileName))) {
+            for (String line : list) {
+                pw.println(line);
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    public static ArrayList<String> readFile(String fileName) {
+        try (BufferedReader bfr = new BufferedReader(new FileReader(fileName))) {
+            ArrayList<String> fileContents = new ArrayList<>();
+            String line = new String("");
+            while ((line = bfr.readLine()) != null) {
+                fileContents.add(line);
+            }
+            return fileContents;
+        } catch (IOException e) {
+            e.printStackTrace();
+            return null;
+        }
+    }
+
+    public static ArrayList<String> getStudentUsernames() {
+        return studentUsernames;
+    }
+
+    public static ArrayList<String> getStudentPasswords() {
+        return studentPasswords;
+    }
+
+    public static ArrayList<String> getTeacherUsernames() {
+        return teacherUsernames;
+    }
+
+    public static ArrayList<String> getTeacherPasswords() {
+        return teacherPasswords;
+    }
+
+    private static void readAllFiles() {
+        File studentUsernamesFile = new File("src/StudentUsernames.txt");
+        File studentPasswordsFile = new File("src/StudentPasswords.txt");
+        File teacherUsernamesFile = new File("src/TeacherUsernames.txt");
+        File teacherPasswordsFile = new File("src/TeacherPasswords.txt");
+
+        // ensure that files exist before calling readFile to avoid FileNotFoundException or other exceptions
+        if (studentUsernamesFile.exists() && studentPasswordsFile.exists()) {
+            studentUsernames = readFile("src/StudentUsernames.txt");
+            studentPasswords = readFile("src/StudentPasswords.txt");
+        }
+
+        if (teacherUsernamesFile.exists() && teacherPasswordsFile.exists()) {
+            teacherUsernames = readFile("src/TeacherUsernames.txt");
+            teacherPasswords = readFile("src/TeacherPasswords.txt");
+        }
+    }
+}
