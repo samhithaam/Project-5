@@ -1,0 +1,597 @@
+import javax.swing.*;
+import java.io.*;
+import java.util.*;
+
+
+class UserProfile{
+    String userId;
+    String passWord;
+
+    public UserProfile(String userId, String passWord) {
+        this.userId = userId;
+        this.passWord = passWord;
+    }
+
+
+    public String getUserId() {
+        return userId;
+    }
+
+    public String getPassWord() {
+        return passWord;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        UserProfile that = (UserProfile) o;
+        return Objects.equals(userId, that.userId) && Objects.equals(passWord, that.passWord);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(userId, passWord);
+    }
+
+    @Override
+    public String toString() {
+        return "UserProfile{" +
+                "userId='" + userId + '\'' +
+                ", passWord='" + passWord + '\'' +
+                '}';
+    }
+}
+
+/**
+ * User.java
+ *
+ * If user creates an account and then logs out, they are still able to log back in
+ * as data is stored in text files.
+ *
+ * @author Samhitha Mupharaphu
+ * @version 12/3/2021
+ */
+public class User {
+
+    private static final int STUDENT = 1;
+    private static final int TEACHER = 2;
+
+    private static List<UserProfile> studentUsernames = Collections.synchronizedList(new ArrayList<>());
+    private static List<UserProfile> teacherUsernames = Collections.synchronizedList(new ArrayList<>());
+
+    private final static Object lock = new Object();
+
+    static {
+        readUserFiles();
+    }
+
+    public User() {
+    }
+
+    public static void main(String[] args) throws Exception {
+    }
+
+    /**
+     * Get contents of file as an array list..
+     * @param fileName
+     * @return
+     */
+    private static  ArrayList<UserProfile> readFile(String fileName) {
+        ArrayList<UserProfile> fileContents = new ArrayList<>();
+        File file = new File(fileName);
+        if( ! file.exists() ) {
+            return fileContents;
+        }
+        JOptionPane.showMessageDialog(null, 
+                "File: " + fileName + "exists. Loading profiles...",
+                "File Exists Message",
+                JOptionPane.INFORMATION_MESSAGE);
+        try (BufferedReader bfr = new BufferedReader(new FileReader(fileName))) {
+            String line = new String("");
+            while ((line = bfr.readLine()) != null) {
+                UserProfile userProfile;
+                String[] tokens = line.split(",");
+                if( tokens != null && tokens.length == 2 ) {
+                    userProfile = new UserProfile(tokens[0], tokens[1]);
+                    fileContents.add(userProfile);
+                }
+            }
+            JOptionPane.showMessageDialog(null, "Loading profiles completed...",
+                    "Loading Completed",
+                    JOptionPane.INFORMATION_MESSAGE);
+            return fileContents;
+        } catch (IOException e) {
+            e.printStackTrace();
+            return null;
+        }
+    }
+
+    /**
+     * Load student & teacher profiles from files.
+     */
+    private static void readUserFiles() {
+        synchronized ( lock ) {
+            studentUsernames = readFile("src/StudentUsernames.txt");
+            teacherUsernames = readFile("src/TeacherUsernames.txt");
+        }
+    }
+
+    /**
+     * Takes list of user profiles and write to a file
+     * @param list
+     * @param fileName
+     * @return
+     * @throws Exception
+     */
+    private static boolean writeFile(List<UserProfile> list, String fileName) throws Exception {
+        JOptionPane.showMessageDialog(null, "Writing profiles to file " + fileName,
+                "Writing Profiles",
+                JOptionPane.INFORMATION_MESSAGE);
+        try (PrintWriter pw = new PrintWriter(new FileWriter(fileName))) {
+            for ( UserProfile line : list) {
+                String entries = String.format( "%s,%s", line.getUserId(), line.getPassWord());
+                pw.println(entries);
+            }
+            pw.flush();
+            return true;
+        } catch (IOException e) {
+            e.printStackTrace();
+            throw e;
+        }
+    }
+
+    /**
+     * Writes all of  the userprofiles from array list to a file..
+     * @throws Exception
+     */
+    private static void writeUserFiles() throws Exception{
+        synchronized (lock) {
+            writeFile(studentUsernames, "src/StudentUsernames.txt");
+            writeFile(teacherUsernames, "src/TeacherUsernames.txt");
+        }
+    }
+
+    private static boolean writeFile(UserProfile userProfile, String fileName) throws Exception {
+        JOptionPane.showMessageDialog(null, "Writing profiles to file " + fileName,
+                "Writing to file",
+                JOptionPane.INFORMATION_MESSAGE);
+        try (PrintWriter pw = new PrintWriter(new FileWriter(fileName, true))) {
+            String entries = String.format( "%s,%s", userProfile.getUserId(), userProfile.getPassWord());
+            pw.println(entries);
+            pw.flush();
+            return true;
+        }
+        catch (IOException e) {
+            e.printStackTrace();
+            throw e;
+        }
+    }
+
+    /**
+     * Write student users to a file
+     * @param userProfile
+     * @throws Exception
+     */
+    public  static void writeStudentUserFiles(UserProfile userProfile) throws Exception{
+        synchronized ( lock ) {
+            writeFile(userProfile, "src/StudentUsernames.txt");
+        }
+    }
+
+    /**
+     * Write teachers list to a file
+     * @param userProfile
+     * @throws Exception
+     */
+    public static void writeTeacherUserFiles(UserProfile userProfile) throws Exception{
+        synchronized ( lock ) {
+            writeFile(userProfile, "src/TeacherUsernames.txt");
+        }
+    }
+
+    /**
+     * Add a student to the array list and write to file.
+     * @param userName
+     * @param passWord
+     * @throws Exception
+     */
+    private static  void addStudent(String userName, String passWord) throws Exception{
+        UserProfile userProfile = new UserProfile(userName, passWord);
+        synchronized ( studentUsernames ) {
+            studentUsernames.add(userProfile);
+            writeStudentUserFiles(userProfile);
+        }
+    }
+
+    private static void addTeacher( String userName, String passWord ) throws Exception {
+        UserProfile userProfile = new UserProfile(userName, passWord);
+        synchronized ( teacherUsernames ) {
+            teacherUsernames.add(userProfile);
+            writeTeacherUserFiles(userProfile);
+        }
+    }
+
+    /**
+     * Creates a student/teacher profile and writes to file
+     * @param teacherOrStudent
+     * @param userName
+     * @param passWord
+     * @return
+     * @throws Exception
+     */
+    public static boolean createAccount( int teacherOrStudent, String userName, String passWord ) throws Exception {
+        if( accountExists(teacherOrStudent,userName, passWord )) {
+            JOptionPane.showMessageDialog(null, "Account exists!",
+                    "Account Exist",
+                    JOptionPane.INFORMATION_MESSAGE);
+            return false;
+        }
+        if (teacherOrStudent == STUDENT) {
+            boolean isStudentPresent=false;
+            synchronized (studentUsernames ) {
+                if (studentUsernames != null && studentUsernames.size() > 0) {
+                    for (UserProfile userProfile : studentUsernames) {
+                        if (userProfile.equals( new UserProfile( userName, passWord))) {
+                            JOptionPane.showMessageDialog(null,
+                                    Thread.currentThread() + 
+                                            String.format("Username <%s> already exists, please try again. ",
+                                    "Username exists", "Username Already Exists",
+                                    JOptionPane.INFORMATION_MESSAGE));
+                            isStudentPresent = true;
+                            break;
+                        }
+                    }
+                    if (!isStudentPresent) {
+                        addStudent(userName, passWord);
+                        return true;
+                    }
+                } else {
+                    //No student exists.
+                    if (studentUsernames != null) {
+                        JOptionPane.showMessageDialog(null,
+                                Thread.currentThread() + 
+                                        String.format("Student username <%s> does not exist, creating..", 
+                                                "Username Does Not Exist",
+                                                JOptionPane.INFORMATION_MESSAGE));
+                        addStudent(userName, passWord);
+                        return true;
+                    }
+                }
+            }
+        } else if (teacherOrStudent == TEACHER) {
+            boolean isTeacherPresent = false;
+            synchronized (teacherUsernames) {
+                if (teacherUsernames != null && teacherUsernames.size() > 0) {
+                    for (UserProfile userProfile : teacherUsernames) {
+                        if (userProfile.equals( new UserProfile(userName, passWord ))) {
+                            JOptionPane.showMessageDialog(null, Thread.currentThread() + 
+                                    String.format("Username <%s> already exists, please try again. ",
+                                    "Username Already Exists",
+                                    JOptionPane.INFORMATION_MESSAGE));
+                            isTeacherPresent = true;
+                            break;
+                        }
+                    }
+                    if (!isTeacherPresent) {
+                        JOptionPane.showMessageDialog(null, Thread.currentThread() +
+                                String.format("Teacher Username <%s> does not exist, creating... ",
+                                        "Teacher Does Not Exist",
+                                        JOptionPane.INFORMATION_MESSAGE));
+                        addTeacher(userName, passWord);
+                        return true;
+                    }
+                } else {
+                    if (teacherUsernames != null) {
+                        addTeacher(userName, passWord);
+                        return true;
+                    }
+                }
+            }
+        }
+        else{
+            JOptionPane.showMessageDialog(null, 
+                    "Invalid user account type. Need to be a teacher/student! ",
+                    "Invalid User Account Type",
+                    JOptionPane.INFORMATION_MESSAGE);
+            return false;
+        }
+        return false;
+    }
+
+    /**
+     * Check if an account exists..
+     * @param teacherOrStudent
+     * @param userName
+     * @param passWord
+     * @return
+     * @throws Exception
+     */
+    public static boolean accountExists(int teacherOrStudent, String userName, String passWord) throws Exception {
+        if (teacherOrStudent == STUDENT) {
+            synchronized (studentUsernames ) {
+                if (studentUsernames != null && studentUsernames.size() > 0) {
+                    for (UserProfile userProfile : studentUsernames) {
+                        if (userProfile.equals( new UserProfile(userName, passWord))) {
+                            JOptionPane.showMessageDialog(null,
+                                    Thread.currentThread() + String.format("Username <%s>  exists", userName),
+                                    "Username Exists",
+                                    JOptionPane.INFORMATION_MESSAGE);
+                            return true;
+                        }
+                    }
+                    return false;
+                } else {
+                    return false;
+                }
+            }
+        } else if (teacherOrStudent == TEACHER) {
+            synchronized (teacherUsernames ) {
+                if (teacherUsernames != null && teacherUsernames.size() > 0) {
+                    for (UserProfile userProfile : teacherUsernames) {
+                        if (userProfile.equals( new UserProfile(userName, passWord) )) {
+                            JOptionPane.showMessageDialog(null,
+                                    Thread.currentThread() + String.format("Username <%s>  exists", userName),
+                                    "Username Exists",
+                                    JOptionPane.INFORMATION_MESSAGE);
+                            return true;
+                        }
+                    }
+                    return false;
+                } else {
+                    return false;
+                }
+            }
+        }
+        else {
+            JOptionPane.showMessageDialog(null,
+                    "Invalid user account type. Need to be a teacher/student!",
+                    "Invalid User Account Type",
+                    JOptionPane.INFORMATION_MESSAGE);
+            return false;
+        }
+    }
+
+    /**
+     * delete a student / teacher account
+     * @param teacherOrStudent
+     * @param userName
+     * @param passWord
+     * @return
+     * @throws Exception
+     */
+    public static boolean deleteAccount(int teacherOrStudent, String userName, String passWord) throws Exception {
+        if( ! accountExists(teacherOrStudent,userName, passWord )) {
+            JOptionPane.showMessageDialog(null,
+                    "Account does not exist! Cannot delete.",
+                    "Account Does Not Exist",
+                    JOptionPane.INFORMATION_MESSAGE);
+            return false;
+        }
+
+        if ( teacherOrStudent == STUDENT) {
+            synchronized (studentUsernames ) {
+                if (studentUsernames == null || studentUsernames.isEmpty()) {
+                    JOptionPane.showMessageDialog(null,
+                            "No student accounts exist. Cannot delete.",
+                            "No Student Accounts Exist",
+                            JOptionPane.INFORMATION_MESSAGE);
+                    return false;
+                }
+                UserProfile userProfile = new UserProfile(userName, passWord);
+                if (studentUsernames.contains(userProfile)) {
+                    JOptionPane.showMessageDialog(null,
+                            "Student account " + userName + "being removed",
+                            "Student Account Remove",
+                            JOptionPane.INFORMATION_MESSAGE);
+                    studentUsernames.remove(userProfile);
+                    writeUserFiles();
+                    return true;
+                }
+            }
+        } else if (teacherOrStudent == TEACHER) {
+            synchronized (teacherUsernames ) {
+                if (teacherUsernames == null || teacherUsernames.isEmpty()) {
+                    JOptionPane.showMessageDialog(null,
+                            "No teacher accounts exist. Cannot delete.",
+                            "No Teacher Accounts Exist",
+                            JOptionPane.INFORMATION_MESSAGE);
+                    return false;
+                }
+                UserProfile userProfile = new UserProfile(userName, passWord);
+                if (teacherUsernames.contains(userProfile)) {
+                    JOptionPane.showMessageDialog(null,
+                            "Teacher account " + userName + "being removed",
+                            "Teacher Account Remove",
+                            JOptionPane.INFORMATION_MESSAGE);
+                    teacherUsernames.remove(userProfile);
+                    writeUserFiles();
+                    return true;
+                }
+            }
+        }  else {
+            JOptionPane.showMessageDialog(null,
+                    "Invalid user account type. Need to be a teacher/student!",
+                    "Invalid User Account Type",
+                    JOptionPane.INFORMATION_MESSAGE);
+            return false;
+        }
+        return false;
+    }
+
+    /**
+     * Edits an account..
+     * @param teacherOrStudent
+     * @param currentUserName
+     * @param currentPassword
+     * @param newUserName
+     * @param newPassword
+     * @return
+     * @throws Exception
+     */
+
+    public static boolean editAccount(int teacherOrStudent, String currentUserName, String currentPassword, String newUserName, String newPassword) throws Exception {
+        if( ! accountExists(teacherOrStudent,currentUserName, currentPassword )) {
+            JOptionPane.showMessageDialog(null,
+                    "Account does not exist. Cannot edit!",
+                    "Account Does Not Exist",
+                    JOptionPane.INFORMATION_MESSAGE);
+            return false;
+        }
+        if (teacherOrStudent == STUDENT) {
+            synchronized (studentUsernames) {
+                if (studentUsernames == null || studentUsernames.isEmpty()) {
+                    JOptionPane.showMessageDialog(null,
+                            "No student accounts exist. Cannot edit",
+                            "No Student Accounts Exist",
+                            JOptionPane.INFORMATION_MESSAGE);
+                    return false;
+                }
+                UserProfile userProfile = new UserProfile(currentUserName, currentPassword);
+                if (studentUsernames.contains(userProfile)) {
+                    UserProfile newUserProfile = new UserProfile(newUserName, newPassword);
+                    if (studentUsernames.contains(newUserProfile)) {
+                        JOptionPane.showMessageDialog(null,
+                                " Account details exist. Cannot modify. Please try again..",
+                                "Cannot Modify",
+                                JOptionPane.INFORMATION_MESSAGE);
+                        return false;
+                    } else {
+                        JOptionPane.showMessageDialog(null,
+                                "Student account " + currentUserName + "being modified",
+                                "Student Account Being Modified",
+                                JOptionPane.INFORMATION_MESSAGE);
+                        studentUsernames.remove(userProfile);
+                        studentUsernames.add(newUserProfile);
+                        writeUserFiles();
+                        JOptionPane.showMessageDialog(null,
+                                "Student account " + currentUserName + "modified successfully",
+                                "Student Account Modified",
+                                JOptionPane.INFORMATION_MESSAGE);
+                        return true;
+                    }
+                } else {
+                    JOptionPane.showMessageDialog(null,
+                            "Student account/password combination " 
+                                    + currentUserName + "does not match. Cannot modify!",
+                            "Combination Does Not Match",
+                            JOptionPane.INFORMATION_MESSAGE);
+                    return false;
+                }
+            }
+        } else if (teacherOrStudent == TEACHER) {
+            synchronized(teacherUsernames) {
+                if (teacherUsernames == null || teacherUsernames.isEmpty()) {
+                    JOptionPane.showMessageDialog(null,
+                            "No teacher accounts exist. Cannot edit",
+                            "No Teacher Accounts Exist",
+                            JOptionPane.INFORMATION_MESSAGE);
+                    return false;
+                }
+                UserProfile userProfile = new UserProfile(currentUserName, currentPassword);
+                if (teacherUsernames.contains(userProfile)) {
+                    JOptionPane.showMessageDialog(null,
+                            "Teacher account exists. Enter new details to modify",
+                            "Teacher Account Exists",
+                            JOptionPane.INFORMATION_MESSAGE);
+                    UserProfile newUserProfile = new UserProfile(newUserName, newPassword);
+                    if (teacherUsernames.contains(newUserProfile)) {
+                        JOptionPane.showMessageDialog(null,
+                                " Account details exists. Cannot modify. Please try again..",
+                                "Cannot Modify",
+                                JOptionPane.INFORMATION_MESSAGE);
+                        return false;
+                    } else {
+                        JOptionPane.showMessageDialog(null,
+                                "Teacher account " + currentUserName + "being modified",
+                                "Teacher Account Being Modified",
+                                JOptionPane.INFORMATION_MESSAGE);
+                        teacherUsernames.remove(userProfile);
+                        teacherUsernames.add(newUserProfile);
+                        writeUserFiles();
+                        JOptionPane.showMessageDialog(null,
+                                "Teacher account " + currentUserName + "modified successfully",
+                                "Teacher Account Modified",
+                                JOptionPane.INFORMATION_MESSAGE);
+                        return true;
+                    }
+                } else {
+                    JOptionPane.showMessageDialog(null,
+                            "Teacher account/password combination " 
+                                    + currentUserName + "does not match. Cannot delete!!",
+                            "Combination Does Not Match",
+                            JOptionPane.INFORMATION_MESSAGE);
+                    return false;
+                }
+            }
+        } else {
+            JOptionPane.showMessageDialog(null,
+                    "Invalid user account type. Need to be a teacher/student!",
+                    "Invalid User Account Type",
+                    JOptionPane.INFORMATION_MESSAGE);
+            return false;
+        }
+    }
+
+    /**
+     * return whether an account exists
+     * @param teacherOrStudent
+     * @param userName
+     * @param passWord
+     * @return
+     * @throws Exception
+     */
+    public static boolean signIn(int teacherOrStudent,String userName, String passWord) throws Exception {
+        if( ! accountExists(teacherOrStudent,userName, passWord )) {
+            JOptionPane.showMessageDialog(null,
+                    "Account does not exists. Cannot signing!",
+                    "Account Does Not Exist",
+                    JOptionPane.INFORMATION_MESSAGE);
+            return false;
+        }
+
+        if (teacherOrStudent == STUDENT) {
+            synchronized (studentUsernames) {
+                if (studentUsernames == null || studentUsernames.isEmpty()) {
+                    JOptionPane.showMessageDialog(null,
+                            "No student accounts exist. Please create an account before signing in",
+                            "No Student Accounts Exist",
+                            JOptionPane.INFORMATION_MESSAGE);
+                    return false;
+                }
+
+                UserProfile userProfile = new UserProfile(userName, passWord);
+                if (studentUsernames.contains(userProfile)) {
+                    JOptionPane.showMessageDialog(null,
+                            String.format("Student <%s> successfully signed in"),
+                            "Student Signed In",
+                            JOptionPane.INFORMATION_MESSAGE);
+                    return true;
+                } else {
+                    return false;
+                }
+            }
+        } else if (teacherOrStudent == TEACHER) {
+            synchronized (teacherUsernames) {
+                if (teacherUsernames == null || teacherUsernames.isEmpty()) {
+                    JOptionPane.showMessageDialog(null,
+                            "No teacher accounts exist. Please create an account before signing in",
+                            "No Teacher Accounts Exist",
+                            JOptionPane.INFORMATION_MESSAGE);
+                    return false;
+                }
+                UserProfile userProfile = new UserProfile(userName, passWord);
+                if (teacherUsernames.contains(userProfile)) {
+                    JOptionPane.showMessageDialog(null,
+                            String.format( "Teacher <%s> successfully signed in", userName),
+                            "Teacher Signed In",
+                            JOptionPane.INFORMATION_MESSAGE);
+                    return true;
+                } else {
+                    return false;
+                }
+            }
+        }
+        return false;
+    }
+}
