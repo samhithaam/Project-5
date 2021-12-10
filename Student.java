@@ -86,7 +86,7 @@ public class Student extends JComponent implements ActionListener, Runnable {
         sPanel.add(submitBtn1);
         content.add(sPanel, BorderLayout.SOUTH);
         ArrayList<JRadioButton> quizName = new ArrayList<JRadioButton>();
-        ArrayList studentSubmissionsLocal = new ArrayList<>();
+        ArrayList studentSubmissions = new ArrayList<>();
         ArrayList<JRadioButton> quizChoice = new ArrayList<JRadioButton>();
 
         submitBtn1.addActionListener(new ActionListener() {
@@ -106,7 +106,7 @@ public class Student extends JComponent implements ActionListener, Runnable {
                     }
                 }
                 //System.out.println("inside submit  button 2 click");
-                submitBtn2Function(quizTitle, studentSubmissionsLocal, quizChoice);
+                submitBtn2Function(quizTitle, studentSubmissions, quizChoice);
             }
         });
 
@@ -123,14 +123,14 @@ public class Student extends JComponent implements ActionListener, Runnable {
                     }
                     m++;
                     if (m == 4) {
-                        studentSubmissionsLocal.add(k, answer);
+                        studentSubmissions.add(k, answer);
                         m = 0;
                         k += 3;
                     }
                 }
 
                 try {
-                    submitBtn3Function(studentSubmissionsLocal);
+                    submitBtn3Function(studentSubmissions);
                 } catch (IOException ex) {
 
                 }
@@ -177,9 +177,9 @@ public class Student extends JComponent implements ActionListener, Runnable {
             cPanel.remove(opt1);
             cPanel.remove(opt2);
             int k = 0;
-            ArrayList<String> studentSubmissionsLocal = readFile("src/StudentSubmissions.txt");
+            ArrayList<String> studentSubmissions= readFile("src/StudentSubmissions.txt");
 
-            if (studentSubmissionsLocal == null || studentSubmissionsLocal.size() == 0) {
+            if (studentSubmissions == null || studentSubmissions.size() == 0) {
                 cPanel.add(new JLabel("There aren't any submissions yet!"));
                 return;
             }
@@ -188,10 +188,10 @@ public class Student extends JComponent implements ActionListener, Runnable {
                 return;
             }
 
-            for (int i = 0; i < studentSubmissionsLocal.size(); i += 3) {
-                cPanel.add(new JLabel("\nQuestion: " +studentSubmissionsLocal.get(i)));
-                cPanel.add(new JLabel("Correct Answer: " + studentSubmissionsLocal.get(i + 1)));
-                cPanel.add(new JLabel("Your Answer: " + studentSubmissionsLocal.get(i + 2)));
+            for (int i = 0; i < studentSubmissions.size(); i += 3) {
+                cPanel.add(new JLabel("\nQuestion: " +studentSubmissions.get(i)));
+                cPanel.add(new JLabel("Correct Answer: " + studentSubmissions.get(i + 1)));
+                cPanel.add(new JLabel("Your Answer: " + studentSubmissions.get(i + 2)));
                 cPanel.add(new JLabel("Points Earned: " + Teacher.getPointValues().get(i / 3)));
 
             }
@@ -209,7 +209,7 @@ public class Student extends JComponent implements ActionListener, Runnable {
 
     }
 
-    protected void submitBtn2Function(String quizTitle, ArrayList studentSubmissionsLocal,
+    protected void submitBtn2Function(String quizTitle, ArrayList studentSubmissions,
                                       ArrayList<JRadioButton> quizChoice) {
         if ("".equals(quizTitle)) {
             JOptionPane.showMessageDialog(null, "Please make a selection!",
@@ -330,7 +330,7 @@ public class Student extends JComponent implements ActionListener, Runnable {
     public void submitQuiz(String qName, HashMap qDetails) {
 
     }
-    
+
     public static ArrayList<Integer> generateRandomNums(int start, int end, int length) {
         ArrayList<Integer> list = new ArrayList<>();
         int num = 0;
