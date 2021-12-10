@@ -42,7 +42,6 @@ class UserProfile{
                 '}';
     }
 }
-
 /**
  * User.java
  *
@@ -52,6 +51,7 @@ class UserProfile{
  * @author Samhitha Mupharaphu
  * @version 12/3/2021
  */
+
 public class User {
 
     private static final int STUDENT = 1;
@@ -72,6 +72,174 @@ public class User {
     public static void main(String[] args) throws Exception {
     }
 
+    public static void signIn() throws IOException {
+        boolean notNum = true;
+        int x = 0;
+        Object[] options = { "Teacher", "Student" };
+        int teacherOrStudent = JOptionPane.showOptionDialog(null, "Are you a student or teacher?",
+                "Teacher or Student",
+                JOptionPane.DEFAULT_OPTION, JOptionPane.INFORMATION_MESSAGE,
+                null, options, options[0]);
+
+        boolean validInput = false;
+        int counter;
+        int indexUsername = 0;
+        int indexPassword = 0;
+        boolean usernameExists;
+        while (!validInput) {
+            if (teacherOrStudent == 0) {
+                boolean signedIn;
+
+                validInput = true;
+                usernameExists = false;
+                while (true) {
+                    String user = JOptionPane.showInputDialog(null,
+                            "Enter a username:",
+                            "Student Username", JOptionPane.QUESTION_MESSAGE);
+
+                    if (studentUsernames != null && studentUsernames.size() > 0) {
+                        counter = 0;
+                        for (String username : studentUsernames) {
+                            if (username.equals(user)) {
+                                usernameExists = true;
+                                indexUsername = counter;
+                                break;
+                            }
+                            counter++;
+                        }
+                        if (!usernameExists) {
+                            JOptionPane.showMessageDialog(null,
+                                    "Username doesn't exist. Please try again!",
+                                    "Username Does Not Exist",
+                                    JOptionPane.INFORMATION_MESSAGE);
+                            // that username doesn't exist but there are other usernames, therefore, give user
+                            // the chance to try again
+                        } else {
+                            break;
+                        }
+                    } else {
+                        JOptionPane.showMessageDialog(null,
+                                "No student users exist in the system!",
+                                "No Student Users Exist",
+                                JOptionPane.INFORMATION_MESSAGE);
+                        // no usernames exist, no need to prompt user again
+                        return;
+                    }
+                }
+                signedIn = false;
+                while (!signedIn) {
+                    String pass = JOptionPane.showInputDialog(null,
+                            "Enter your password:",
+                            "Student Password", JOptionPane.QUESTION_MESSAGE);
+
+                    if (studentPasswords != null && studentPasswords.size() > 0) {
+                        counter = 0;
+                        for (String password : studentPasswords) {
+                            if (pass.equals(password)) {
+                                indexPassword = counter;
+                                if (indexUsername == indexPassword) {
+                                    JOptionPane.showMessageDialog(null,
+                                            "You are signed in!!",
+                                            "Signed In Message",
+                                            JOptionPane.INFORMATION_MESSAGE);
+                                    signedIn = true;
+                                    StudentGUI.main(null);
+                                } else {
+                                    JOptionPane.showMessageDialog(null,
+                                            "Error! Password doesn't match. Unable to sign in.",
+                                            "Password Does Not Match Message",
+                                            JOptionPane.INFORMATION_MESSAGE);
+                                }
+                                break; // break out of for loop after calling main method in Student.java or
+                                // printing error message
+                            }
+                            counter++;
+                        }
+                    }
+                }
+            } else if (teacherOrStudent == 1) {
+                boolean signedIn;
+
+                validInput = true;
+                usernameExists = false;
+                while (true) {
+                    String user = JOptionPane.showInputDialog(null,
+                            "Enter a username:",
+                            "Teacher Username", JOptionPane.QUESTION_MESSAGE);
+                    if (teacherUsernames != null && teacherUsernames.size() > 0) {
+                        counter = 0;
+                        for (String username : teacherUsernames) {
+                            if (username.equals(user)) {
+                                usernameExists = true;
+                                indexUsername = counter;
+                                break;
+                            }
+                            counter++;
+                        }
+                        if (!usernameExists) {
+                            JOptionPane.showMessageDialog(null,
+                                    "Username doesn't exist. Please try again!",
+                                    "Username Does Not Exist",
+                                    JOptionPane.INFORMATION_MESSAGE);
+                        } else {
+                            break;
+                        }
+                    } else {
+                        JOptionPane.showMessageDialog(null,
+                                "No teacher users exist in the system!",
+                                "No Teacher Users Exist",
+                                JOptionPane.INFORMATION_MESSAGE);
+                        return;
+                    }
+                }
+
+                signedIn = false;
+                while (!signedIn) {
+                    String pass = JOptionPane.showInputDialog(null,
+                            "Enter your password:",
+                            "Teacher Password", JOptionPane.QUESTION_MESSAGE);
+                    if (teacherPasswords != null && teacherPasswords.size() > 0) {
+                        counter = 0;
+                        for (String password : teacherPasswords) {
+                            if (pass.equals(password)) {
+                                indexPassword = counter;
+                                if (indexUsername == indexPassword) {
+                                    JOptionPane.showMessageDialog(null,
+                                            "You are signed in!",
+                                            "Signed In Message",
+                                            JOptionPane.INFORMATION_MESSAGE);
+                                    signedIn = true;
+                                    TeacherGUI.main(null);
+                                } else {
+                                    JOptionPane.showMessageDialog(null,
+                                            "Error! Password doesn't match. Unable to sign in.",
+                                            "Password Does Not Match Message",
+                                            JOptionPane.INFORMATION_MESSAGE);
+                                }
+                                break;
+                            }
+                            counter++;
+                        }
+                    }
+                }
+            } else {
+                System.out.println("Invalid input! Try again.");
+                notNum = true;
+                while (notNum) {
+                    try {
+                        System.out.println("Are you a student or a teacher? Enter (1) for student" +
+                                " and (2) for teacher.");
+                        teacherOrStudent = Integer.parseInt(scan.nextLine());
+                        notNum = false;
+                    } catch (NumberFormatException e) {
+                        System.out.println("You didn't enter a number! Try again.");
+                    }
+                }
+            }
+        }
+    }
+
+
     /**
      * Get contents of file as an array list..
      * @param fileName
@@ -83,7 +251,7 @@ public class User {
         if( ! file.exists() ) {
             return fileContents;
         }
-        JOptionPane.showMessageDialog(null, 
+        JOptionPane.showMessageDialog(null,
                 "File: " + fileName + "exists. Loading profiles...",
                 "File Exists Message",
                 JOptionPane.INFORMATION_MESSAGE);
@@ -234,7 +402,7 @@ public class User {
                     for (UserProfile userProfile : studentUsernames) {
                         if (userProfile.equals( new UserProfile( userName, passWord))) {
                             JOptionPane.showMessageDialog(null,
-                                    Thread.currentThread() + 
+                                    Thread.currentThread() +
                                             String.format("Username <%s> already exists, please try again. ",
                                     "Username exists", "Username Already Exists",
                                     JOptionPane.INFORMATION_MESSAGE));
@@ -250,8 +418,8 @@ public class User {
                     //No student exists.
                     if (studentUsernames != null) {
                         JOptionPane.showMessageDialog(null,
-                                Thread.currentThread() + 
-                                        String.format("Student username <%s> does not exist, creating..", 
+                                Thread.currentThread() +
+                                        String.format("Student username <%s> does not exist, creating..",
                                                 "Username Does Not Exist",
                                                 JOptionPane.INFORMATION_MESSAGE));
                         addStudent(userName, passWord);
@@ -265,7 +433,7 @@ public class User {
                 if (teacherUsernames != null && teacherUsernames.size() > 0) {
                     for (UserProfile userProfile : teacherUsernames) {
                         if (userProfile.equals( new UserProfile(userName, passWord ))) {
-                            JOptionPane.showMessageDialog(null, Thread.currentThread() + 
+                            JOptionPane.showMessageDialog(null, Thread.currentThread() +
                                     String.format("Username <%s> already exists, please try again. ",
                                     "Username Already Exists",
                                     JOptionPane.INFORMATION_MESSAGE));
@@ -290,7 +458,7 @@ public class User {
             }
         }
         else{
-            JOptionPane.showMessageDialog(null, 
+            JOptionPane.showMessageDialog(null,
                     "Invalid user account type. Need to be a teacher/student! ",
                     "Invalid User Account Type",
                     JOptionPane.INFORMATION_MESSAGE);
@@ -472,7 +640,7 @@ public class User {
                     }
                 } else {
                     JOptionPane.showMessageDialog(null,
-                            "Student account/password combination " 
+                            "Student account/password combination "
                                     + currentUserName + "does not match. Cannot modify!",
                             "Combination Does Not Match",
                             JOptionPane.INFORMATION_MESSAGE);
@@ -517,7 +685,7 @@ public class User {
                     }
                 } else {
                     JOptionPane.showMessageDialog(null,
-                            "Teacher account/password combination " 
+                            "Teacher account/password combination "
                                     + currentUserName + "does not match. Cannot delete!!",
                             "Combination Does Not Match",
                             JOptionPane.INFORMATION_MESSAGE);
