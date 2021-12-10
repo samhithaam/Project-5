@@ -42,12 +42,10 @@ public class Student extends JComponent implements ActionListener {
     private static ArrayList<String> studentSubmissions = new ArrayList<>();
 
     public static void main(String [] args) {
-        SwingUtilities.invokeLater((Runnable) new Student());
         start();
     }
 
     public static void start() {
-        System.out.println("running");
         JFrame frame = new JFrame();
         frame.setTitle("Student");
         Container content = frame.getContentPane();
