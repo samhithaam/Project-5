@@ -1,3 +1,4 @@
+import javax.swing.*;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
@@ -41,23 +42,25 @@ public class Server implements Runnable {
 
             String command = reader.readLine();
             if (command == null) {
-                System.out.println("null");
-            } else if (command.equals("createStudent")) {
+            } else if (command.equals("1")) {
                 createAccount(reader, writer, false);
-            } else if (command.equals("createTeacher")) {
+            } else if (command.equals("2")) {
                 createAccount(reader, writer, true);
-            } else if (command.equals("editStudent")) {
+            } else if (command.equals("3")) {
                 editAccount(reader, writer, false);
-            } else if (command.equals("editTeacher")) {
+            } else if (command.equals("4")) {
                 editAccount(reader, writer, true);
-            } else if (command.equals("deleteStudent")) {
+            } else if (command.equals("5")) {
                 deleteAccount(reader, writer, false);
-            } else if (command.equals("deleteTeacher")) {
+            } else if (command.equals("6")) {
                 deleteAccount(reader, writer, true);
-            } else if (command.equals("signinStudent")) {
+            } else if (command.equals("7")) {
                 signIn(reader, writer, false);
-            } else if (command.equals("signinTeacher")) {
+            } else if (command.equals("8")) {
                 signIn(reader, writer, true);
+            } else {
+                JOptionPane.showMessageDialog(null, "Invalid input!",
+                        "Card", JOptionPane.ERROR_MESSAGE);
             }
         } catch (IOException e) {
             e.printStackTrace();
@@ -65,17 +68,25 @@ public class Server implements Runnable {
     }
 
     private void createAccount(BufferedReader reader, PrintWriter writer, boolean isTeacher) throws IOException {
-        String user = reader.readLine();
-        String pass = reader.readLine();
-        // check whether ArrayList is null to avoid NullPointerException
+        String user = JOptionPane.showInputDialog(null, "Enter the username.");
+        if (user == null || user.trim().length() == 0) {
+            JOptionPane.showMessageDialog(null, "Invalid input!",
+                    "Card", JOptionPane.ERROR_MESSAGE);
+            return;
+        }
+
+        String pass = JOptionPane.showInputDialog(null, "Enter the password.");
+        if (pass == null || pass.trim().length() == 0) {
+            JOptionPane.showMessageDialog(null, "Invalid input!",
+                    "Card", JOptionPane.ERROR_MESSAGE);
+            return;
+        }
         boolean exists = false;
         ArrayList<String> usernames = isTeacher ? Server.teacherUsernames : Server.studentUsernames;
         ArrayList<String> passwords = isTeacher ? Server.teacherPasswords : Server.studentPasswords;
         if (usernames != null && usernames.size() > 0) {
             for (String username : usernames) {
                 if (username.equals(user)) {
-                    writer.println("exists");
-                    writer.flush();
                     exists = true;
                     break;
                 }
@@ -84,8 +95,6 @@ public class Server implements Runnable {
                 usernames.add(user);
                 passwords.add(pass);
                 updateFiles();
-                writer.println("success");
-                writer.flush();
             }
         } else {
             // can add without checking whether username already exists
@@ -94,8 +103,6 @@ public class Server implements Runnable {
                 usernames.add(user);
                 passwords.add(pass);
                 updateFiles();
-                writer.println("success");
-                writer.flush();
             }
         }
 
@@ -108,16 +115,85 @@ public class Server implements Runnable {
         writeFile(teacherPasswords, "src/TeacherPasswords.txt");
 
     }
-
     private void editAccount(BufferedReader reader, PrintWriter writer, boolean isTeacher) throws IOException {
-    }
+        String userOld = JOptionPane.showInputDialog(null, "Enter the username of the account you'd like to edit.");
+        if (userOld == null || userOld.trim().length() == 0) {
+            JOptionPane.showMessageDialog(null, "Invalid input!",
+                    "Card", JOptionPane.ERROR_MESSAGE);
+            return;
+        }
+        int index = 0;
+        int counter = 0;
+        boolean exists = false;
+        ArrayList<String> usernames = isTeacher ? Server.teacherUsernames : Server.studentUsernames;
+        ArrayList<String> passwords = isTeacher ? Server.teacherPasswords : Server.studentPasswords;
+        if (usernames != null && usernames.size() > 0) {
+            counter = 0;
+            for (String username : usernames) {
+                if (username.equals(userOld)) {
+                    exists = true;
+                    index = counter; // index of oldUser
+                    break;
+                }
+                counter++;
+            }
+            if (!exists) {
+                return;
+            }
+        } else { // if the ArrayList is null or the length is 0
+            return;
+        }
 
+        usernames.remove(userOld);
+        passwords.remove(index);
+        createAccount(reader, writer, isTeacher);
+    }
     private void deleteAccount(BufferedReader reader, PrintWriter writer, boolean isTeacher) throws IOException {
-    }
+        String userOld = JOptionPane.showInputDialog(null, "Enter the username of the account you'd like to delete.");
+        if (userOld == null || userOld.trim().length() == 0) {
+            JOptionPane.showMessageDialog(null, "Invalid input!",
+                    "Card", JOptionPane.ERROR_MESSAGE);
+            return;
+        }
+        int index = 0;
+        int counter = 0;
+        boolean exists = false;
+        ArrayList<String> usernames = isTeacher ? Server.teacherUsernames : Server.studentUsernames;
+        ArrayList<String> passwords = isTeacher ? Server.teacherPasswords : Server.studentPasswords;
+        if (usernames != null && usernames.size() > 0) {
+            counter = 0;
+            for (String username : usernames) {
+                if (username.equals(userOld)) {
+                    exists = true;
+                    index = counter; // index of oldUser
+                    break;
+                }
+                counter++;
+            }
+            if (!exists) {
+                return;
+            }
+        } else { // if the ArrayList is null or the length is 0
+            return;
+        }
 
+        usernames.remove(userOld);
+        passwords.remove(index);
+    }
     private void signIn(BufferedReader reader, PrintWriter writer, boolean isTeacher) throws IOException {
-        String user = reader.readLine();
-        String pass = reader.readLine();
+        String user = JOptionPane.showInputDialog(null, "Enter the username.");
+        if (user == null || user.trim().length() == 0) {
+            JOptionPane.showMessageDialog(null, "Invalid input!",
+                    "Card", JOptionPane.ERROR_MESSAGE);
+            return;
+        }
+
+        String pass = JOptionPane.showInputDialog(null, "Enter the password.");
+        if (pass == null || pass.trim().length() == 0) {
+            JOptionPane.showMessageDialog(null, "Invalid input!",
+                    "Card", JOptionPane.ERROR_MESSAGE);
+            return;
+        }
         // check whether ArrayList is null to avoid NullPointerException
         boolean exists = false;
         ArrayList<String> usernames = isTeacher ? Server.teacherUsernames : Server.studentUsernames;
@@ -136,23 +212,18 @@ public class Server implements Runnable {
                 }
                 counter++;
             }
-            if (!usernameExists) {
-                writer.println("doesNotExist");
-                writer.flush();
-                // that username doesn't exist but there are other usernames, therefore, give user
-                // the chance to try again
-            } else {
+            if (usernameExists) {
                 if (passwords != null && passwords.size() > 0) {
                     counter = 0;
                     for (String password : passwords) {
                         if (pass.equals(password)) {
                             indexPassword = counter;
                             if (indexUsername == indexPassword) {
-                                writer.println("success");
-                                writer.flush();
-                            } else {
-                                writer.println("passwordMismatch");
-                                writer.flush();
+                                if (isTeacher) {
+                                    Teacher.main(null);
+                                } else {
+                                    Student.main(null);
+                                }
                             }
                             break; // break out of for loop after calling main method in Student.java or
                             // printing error message
@@ -161,10 +232,7 @@ public class Server implements Runnable {
                     }
                 }
             }
-        } else {
-            System.out.println("doesNotExist");
-            // no usernames exist, no need to prompt user again
-        }
+        } // no usernames exist, no need to prompt user again
 
     }
     private static void writeFile(ArrayList<String> list, String fileName) {
