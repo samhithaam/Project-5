@@ -23,29 +23,31 @@ import javax.swing.JScrollPane;
 import javax.swing.SwingUtilities;
 
 
-public class Student extends JComponent implements ActionListener, Runnable {
-    JButton submitBtn1;
-    JButton submitBtn2;
-    JButton submitBtn3;
-    JButton submitBtn4;
-    ButtonGroup bgroup;
-    JRadioButton opt1;
-    JRadioButton opt2;
+public class Student extends JComponent implements ActionListener {
+    private static JButton submitBtn1;
+    private static JButton submitBtn2;
+    private static JButton submitBtn3;
+    private static JButton submitBtn4;
+    private static ButtonGroup bgroup;
+    private static JRadioButton opt1;
+    private static JRadioButton opt2;
 
     String selQuiz = "";
-    boolean option1Selected; //opt1.isSelected();
-    boolean option2Selected; //opt2.isSelected();
+    static boolean option1Selected; //opt1.isSelected();
+    static boolean option2Selected; //opt2.isSelected();
 
-    JPanel cPanel;
-    JPanel sPanel;
+    private static JPanel cPanel;
+    private static JPanel sPanel;
 
     private static ArrayList<String> studentSubmissions = new ArrayList<>();
 
-    public static void main(String[] args) {
-        SwingUtilities.invokeLater(new Student());
+    public static void main(String [] args) {
+        SwingUtilities.invokeLater((Runnable) new Student());
+        start();
     }
 
-    public void run() {
+    public static void start() {
+        System.out.println("running");
         JFrame frame = new JFrame();
         frame.setTitle("Student");
         Container content = frame.getContentPane();
@@ -68,8 +70,34 @@ public class Student extends JComponent implements ActionListener, Runnable {
         cPanel.add(opt1);
         cPanel.add(opt2);
 
-        opt1.addActionListener(this);
-        opt2.addActionListener(this);
+        opt1.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                String optionSelected =
+                        ((JRadioButton) e.getSource()).getActionCommand();
+                if (opt1.isSelected() || optionSelected.startsWith("Take")) {
+                    opt1.setSelected(true);
+                    option1Selected = true;
+
+                    opt2.setSelected(false);
+                    option2Selected = false;
+                }
+            }
+        });
+        opt2.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                String optionSelected =
+                        ((JRadioButton) e.getSource()).getActionCommand();
+                if (opt2.isSelected() || optionSelected.startsWith("View")) {
+                    opt2.setSelected(true);
+                    opt1.setSelected(false);
+
+                    option1Selected = false;
+                    option2Selected = true;
+                }
+            }
+        });
 
         JScrollPane scrollPane = new JScrollPane(cPanel);
         scrollPane.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
@@ -147,7 +175,7 @@ public class Student extends JComponent implements ActionListener, Runnable {
         });
     }
 
-    protected void submitBtn1Function(ArrayList<JRadioButton> quizName) {
+    protected static void submitBtn1Function(ArrayList<JRadioButton> quizName) {
 
         if (!option1Selected && !option2Selected) {
             JOptionPane.showMessageDialog(null, "Please make a selection!",
@@ -209,8 +237,8 @@ public class Student extends JComponent implements ActionListener, Runnable {
 
     }
 
-    protected void submitBtn2Function(String quizTitle, ArrayList studentSubmissions,
-                                      ArrayList<JRadioButton> quizChoice) {
+    protected static void submitBtn2Function(String quizTitle, ArrayList studentSubmissions,
+                                             ArrayList<JRadioButton> quizChoice) {
         if ("".equals(quizTitle)) {
             JOptionPane.showMessageDialog(null, "Please make a selection!",
                     "Error", JOptionPane.ERROR_MESSAGE);
@@ -292,7 +320,7 @@ public class Student extends JComponent implements ActionListener, Runnable {
         }
     }
 
-    protected void submitBtn3Function(ArrayList<String> array) throws IOException {
+    protected static void submitBtn3Function(ArrayList<String> array) throws IOException {
         BufferedWriter wr = new BufferedWriter(new FileWriter(new File("src/StudentSubmissions.txt")));
         for (String s : array) {
             System.out.println(s);
@@ -304,7 +332,7 @@ public class Student extends JComponent implements ActionListener, Runnable {
         //System.out.println("submitBtn3  selected");
     }
 
-    protected void submitBtn4Function() {
+    protected static void submitBtn4Function() {
 
     }
 
@@ -372,5 +400,3 @@ public class Student extends JComponent implements ActionListener, Runnable {
         return studentSubmissions;
     }
 }
-
-
