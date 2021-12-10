@@ -35,7 +35,7 @@ public class Teacher {
     public static ArrayList<Integer> getPointValues() {
         return pointValues;
     }
-    
+
     public static ArrayList<String> studentSubmissions = new ArrayList<>();
 
 
@@ -46,11 +46,11 @@ public class Teacher {
         int exit;
         // Accounts for if teacher wants to input more than one question, main method accounts for
         // if teacher wants to create more than one quiz
+        String quizTitle = JOptionPane.showInputDialog(null,
+                "Enter quiz title:",
+                "QUIZ TITLE", JOptionPane.QUESTION_MESSAGE);
+        teacherSubmissions.add(quizTitle);
         do {
-            String quizTitle = JOptionPane.showInputDialog(null,
-                    "Enter quiz title:",
-                    "QUIZ TITLE", JOptionPane.QUESTION_MESSAGE);
-            teacherSubmissions.add(quizTitle);
             while (!validInput) {
                 int randomizeQuestions = JOptionPane.showConfirmDialog(null,
                         "Would you like to randomize questions?", "RANDOMIZE",
