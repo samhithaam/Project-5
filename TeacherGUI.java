@@ -53,7 +53,7 @@ public class Teacher {
         do {
             while (!validInput) {
                 int randomizeQuestions = JOptionPane.showConfirmDialog(null,
-                        "Would you like to randomize questions?", "RANDOMIZE",
+                        "Would you like to randomize answers?", "RANDOMIZE",
                         JOptionPane.YES_NO_OPTION);
                 if (randomizeQuestions == JOptionPane.NO_OPTION) {
                     teacherSubmissions.add("n");
@@ -302,7 +302,6 @@ public class Teacher {
                 String pointsAssigned = JOptionPane.showInputDialog(null,
                         "How many points would you like to assign for their answer?",
                         "POINTS ASSIGNED", JOptionPane.QUESTION_MESSAGE);
-                System.out.println("How many points would you like to assign for their answer?");
                 // allow teacher to manually assign points
                 pointValues.add(Integer.parseInt(pointsAssigned));
             }
@@ -418,7 +417,11 @@ public class Teacher {
                                     "No Input Message",
                                     JOptionPane.INFORMATION_MESSAGE);
                         } else {
-                            System.out.println(studentSubmissions.get(i));
+                            String answer = studentSubmissions.get(i);
+                            JOptionPane.showMessageDialog(null,
+                                    answer,
+                                    "Submissions Message",
+                                    JOptionPane.INFORMATION_MESSAGE);
                         }
                     }
                 }
