@@ -1,307 +1,93 @@
+import javax.swing.*;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import java.net.Socket;
-import java.util.Scanner;
-
-/**
- * Project 5 requires a concurrent solution. That is, multiple users must be able to access the application at once.
- * Project 5 also requires network IO. Users should not be limited to just one machine.
- * Second, no data may be stored client-side. Additionally, all application data must persist even if there's a complete shutdown of the server.
- * Third, we define real-time updates as those that occur automatically, without any action from the user.
- * Requiring users to select a refresh button or navigate to a different page before updating content is not permitted.
- * The application must support simultaneous use by multiple users over a network. New content should appear in real-time as users add it.
- */
+import java.net.UnknownHostException;
 
 public class Client {
 
     public static void main(String[] args) throws Exception {
-        Scanner scan = new Scanner(System.in);
-        System.out.println("Enter server host name");
-        String serverName = scan.nextLine();
-        System.out.println("Enter server port");
-        int portNo = Integer.parseInt(scan.nextLine());
-        Socket socket = new Socket(serverName, portNo);
-        try (
+        JOptionPane.showMessageDialog(null, "Welcome!", "Card",
+                JOptionPane.INFORMATION_MESSAGE);
+        try {
+            connectClient();
+        } catch (IOException e) {
+            JOptionPane.showMessageDialog(null, "Unable to connect!",
+                    "Statistics Card", JOptionPane.ERROR_MESSAGE);
+        }
+    }
+
+    public static void connectClient() throws IOException {
+        String hostName = JOptionPane.showInputDialog(null, "Enter the host name.",
+                "localhost");
+        if (hostName == null || hostName.trim().length() == 0) {
+            JOptionPane.showMessageDialog(null, "You did not input a name!",
+                    "Card", JOptionPane.ERROR_MESSAGE);
+            return;
+        }
+
+        String port = JOptionPane.showInputDialog(null, "Enter the port number.",
+                "8081");
+        int portNo = 0;
+        if (port == null || port.trim().length() == 0) {
+            JOptionPane.showMessageDialog(null, "You did not enter anything!",
+                    "Card", JOptionPane.ERROR_MESSAGE);
+            return;
+        } else {
+            try {
+                portNo = Integer.parseInt(port);
+            } catch (NumberFormatException e) {
+                JOptionPane.showMessageDialog(null, "You did not enter a number!", "Card",
+                        JOptionPane.ERROR_MESSAGE);
+                return;
+            }
+        }
+
+        try {
+            boolean toContinue = true;
+            while (toContinue) {
+                Socket socket = new Socket(hostName, portNo);
                 BufferedReader reader = new BufferedReader(new InputStreamReader(socket.getInputStream()));
                 PrintWriter writer = new PrintWriter(socket.getOutputStream());
-        ) {
-            boolean notNum = true;
-            boolean exit = false;
-            int choice = 0;
-            do {
-                notNum = true;
-                choice = 0;
-                // following lines of code are included to make sure user inputs a number
-                while (notNum) {
-                    try {
-                        System.out.println("\nWhat would you like to do? \n1. Create an account \n2. Edit an account" +
-                                "\n3. Delete an account\n4. Sign in\n5. Exit.");
-                        choice = Integer.parseInt(scan.nextLine());
-                        notNum = false;
-                    } catch (NumberFormatException e) {
-                        System.out.println("You didn't enter a number! Try again.");
+                String str = new String("");
+                boolean success = false;
+                while (!success) {
+                    str = JOptionPane.showInputDialog(null, "What would you like to do?\n1. Create Student account.\n2. Create Teacher account." +
+                                    "\n3. Edit Student account.\n4. Edit Teacher account.\n5. Delete Student account.\n6. Delete Teacher account.\n7. Sign in (Student account)." +
+                                    "\n8. Sign in (Teacher account).",
+                            "Statistics Card", JOptionPane.QUESTION_MESSAGE);
+                    if (str == null || str.trim().length() == 0) {
+                        JOptionPane.showMessageDialog(null, "You did not input anything!",
+                                "Statistics Card", JOptionPane.ERROR_MESSAGE);
+                    } else {
+                        success = true;
                     }
                 }
-                if (choice == 1) {
-                    createAccount(scan, reader, writer);
-                } else if (choice == 2) {
-                    editAccount(scan, reader, writer);
-                } else if (choice == 3) {
-                    deleteAccount(scan, reader, writer);
-                } else if (choice == 4) {
-                    signIn(scan, reader, writer);
-                } else if (choice == 5) {
-                    exit = true;
+
+                writer.write(str);
+                writer.println();
+                writer.flush();
+
+                if (str.equals("7") || str.equals("8")) {
+                    writer.close();
+                    reader.close();
+                    break;
+
+                }
+                String shouldContinue = JOptionPane.showInputDialog(null, "Do you want to continue?",
+                        "Continue?", JOptionPane.QUESTION_MESSAGE);
+                if (shouldContinue != null && shouldContinue.equalsIgnoreCase("yes")) {
                 } else {
-                    System.out.println("Invalid input. Please try again!"); // handles invalid input
-                }
-            } while (!exit); // loops until user enters 5
-        }
-    }
-
-    public static void createAccount(Scanner scan, BufferedReader reader, PrintWriter writer) throws IOException {
-        int teacherOrStudent = 0;
-        boolean notNum = true;
-        // following lines of code are included to make sure user inputs a number
-        while (notNum) {
-            try {
-                System.out.println("Are you a student or a teacher? Enter (1) for student and (2) for teacher.");
-                teacherOrStudent = Integer.parseInt(scan.nextLine());
-                notNum = false;
-            } catch (NumberFormatException e) {
-                System.out.println("You didn't enter a number! Try again.");
-            }
-        }
-
-        boolean validInput = false;
-        while (!validInput) {
-            if (teacherOrStudent == 1) {
-                String command = "createStudent";
-                validInput = createAccount(scan, reader, writer, command);
-
-            } else if (teacherOrStudent == 2) {
-                String command = "createTeacher";
-                validInput = createAccount(scan, reader, writer, command);
-            } else {
-                System.out.println("Invalid input! Try again.");
-                notNum = true;
-                // following lines of code are included to make sure user inputs a number
-                while (notNum) {
-                    try {
-                        System.out.println("Are you a student or a teacher? Enter (1) for " +
-                                "student and (2) for teacher.");
-                        teacherOrStudent = Integer.parseInt(scan.nextLine());
-                        notNum = false;
-                    } catch (NumberFormatException e) {
-                        System.out.println("You didn't enter a number! Try again.");
-                    }
+                    toContinue = false;
+                    writer.close();
+                    reader.close();
                 }
             }
+        } catch (UnknownHostException e) {
+            JOptionPane.showMessageDialog(null, "Unable to connect!",
+                    "Statistics Card", JOptionPane.INFORMATION_MESSAGE);
         }
-    }
-
-    private static boolean createAccount(Scanner scan, BufferedReader reader, PrintWriter writer, String command) throws IOException {
-        boolean validInput;
-        validInput = true;
-        System.out.print("Enter a username: ");
-        String user = scan.nextLine();
-
-        System.out.print("\nEnter a password: ");
-        String pass = scan.nextLine();
-        writer.println(command);
-        writer.println(user);
-        writer.println(pass);
-        writer.flush();
-        String userCreated = reader.readLine();
-        if (userCreated.equals("user created success")) {
-            System.out.println("\nYou have successfully created an account!");
-        } else if (userCreated.equals("exists")) {
-            System.out.println("\nUsername already exists, please try again.");
-        }
-        return validInput;
-    }
-
-    // if a specific username is stored at index 0, the corresponding password is stored at index 0
-    // the method stores index value of username being removed, and removes the element at that index value from
-    // the passwords ArrayList
-    public static void editAccount(Scanner scan, BufferedReader reader, PrintWriter writer) throws IOException {
-        boolean notNum = true;
-        int teacherOrStudent = 0;
-        // following lines of code are included to make sure user inputs a number
-        while (notNum) {
-            try {
-                System.out.println("Are you a student or a teacher? Enter (1) for student and (2) for teacher.");
-                teacherOrStudent = Integer.parseInt(scan.nextLine());
-                notNum = false;
-            } catch (NumberFormatException e) {
-                System.out.println("You didn't enter a number! Try again.");
-            }
-        }
-
-        if (teacherOrStudent == 1) {
-            String command = "editStudent";
-            editAccount(scan, reader, writer, command);
-        } else if (teacherOrStudent == 2) {
-            String command = "editTeacher";
-            editAccount(scan, reader, writer, command);
-        } else {
-            System.out.println("Invalid input! Try again.");
-            notNum = true;
-            while (notNum) {
-                try {
-                    System.out.println("Are you a student or a teacher? Enter (1) for student and (2) for teacher.");
-                    teacherOrStudent = Integer.parseInt(scan.nextLine());
-                    notNum = false;
-                } catch (NumberFormatException e) {
-                    System.out.println("You didn't enter a number! Try again.");
-                }
-            }
-        }
-    }
-
-    private static void editAccount(Scanner scan, BufferedReader reader, PrintWriter writer, String command) throws IOException {
-        String oldUser;
-        System.out.print("Enter the username of the account you would like to edit: ");
-        oldUser = scan.nextLine();
-
-        System.out.print("Enter the new username you would to like to replace the old username with: ");
-        String newUser = scan.nextLine();
-
-        System.out.print("\nEnter the password you would to like to replace the old password with: ");
-        String newPass = scan.nextLine();
-        writer.println(command);
-        writer.println(oldUser);
-        writer.println(newUser);
-        writer.println(newPass);
-        writer.flush();
-        String userEdited = reader.readLine();
-        if (userEdited.equals("user edit success")) {
-            System.out.println("You have successfully edited the account!");
-        }
-    }
-
-    public static void deleteAccount(Scanner scan, BufferedReader reader, PrintWriter writer) throws IOException {
-        boolean notNum = true;
-        int teacherOrStudent = 0;
-        while (notNum) {
-            try {
-                System.out.println("Are you a student or a teacher? Enter (1) for student and (2) for teacher.");
-                teacherOrStudent = Integer.parseInt(scan.nextLine());
-                notNum = false;
-            } catch (NumberFormatException e) {
-                System.out.println("You didn't enter a number! Try again.");
-            }
-        }
-
-        if (teacherOrStudent == 1) {
-            String command = "deleteStudent";
-            deleteAccount(scan, reader, writer, command);
-        } else if (teacherOrStudent == 2) {
-            String command = "deleteTeacher";
-            deleteAccount(scan, reader, writer, command);
-        } else {
-            System.out.println("Invalid input! Try again.");
-            notNum = true;
-            while (notNum) {
-                try {
-                    System.out.println("Are you a student or a teacher? Enter (1) for student and (2) for teacher.");
-                    teacherOrStudent = Integer.parseInt(scan.nextLine());
-                    notNum = false;
-                } catch (NumberFormatException e) {
-                    System.out.println("You didn't enter a number! Try again.");
-                }
-            }
-        }
-    }
-
-    private static void deleteAccount(Scanner scan, BufferedReader reader, PrintWriter writer, String command) throws IOException {
-        String deletedUser;
-        System.out.print("Enter the username of the account you would like to delete: ");
-        deletedUser = scan.nextLine();
-        writer.println(command);
-        writer.println(deletedUser);
-        writer.flush();
-        String userEdited = reader.readLine();
-        if (userEdited.contains("success")) {
-            System.out.println("You have successfully deleted the account!");
-        } else if (userEdited.equals("doesNotExist")) {
-            System.out.println("An account with the username you entered does not exist.");
-        }
-
-        System.out.println("You have successfully deleted the account!");
-    }
-
-
-    // first checks if username exists in ArrayList, if yes, stores index
-    // checks if element at that index in passwords ArrayList matches what the user entered as their password
-    // if yes, sign in is successful
-    public static void signIn(Scanner scan, BufferedReader reader, PrintWriter writer) throws IOException {
-        boolean notNum = true;
-        int teacherOrStudent = 0;
-        while (notNum) {
-            try {
-                System.out.println("Are you a student or a teacher? Enter (1) for student and (2) for teacher.");
-                teacherOrStudent = Integer.parseInt(scan.nextLine());
-                notNum = false;
-            } catch (NumberFormatException e) {
-                System.out.println("You didn't enter a number! Try again.");
-            }
-        }
-
-        boolean validInput = false;
-        while (!validInput) {
-            if (teacherOrStudent == 1) {
-                String command = "signinStudent";
-                validInput = signin(scan, reader, writer, command);
-            } else if (teacherOrStudent == 2) {
-                String command = "signinTeacher";
-                validInput = signin(scan, reader, writer, command);
-            } else {
-                System.out.println("Invalid input! Try again.");
-                notNum = true;
-                while (notNum) {
-                    try {
-                        System.out.println("Are you a student or a teacher? Enter (1) for student" +
-                                " and (2) for teacher.");
-                        teacherOrStudent = Integer.parseInt(scan.nextLine());
-                        notNum = false;
-                    } catch (NumberFormatException e) {
-                        System.out.println("You didn't enter a number! Try again.");
-                    }
-                }
-            }
-        }
-    }
-
-    private static boolean signin(Scanner scan, BufferedReader reader, PrintWriter writer, String command) throws IOException {
-        boolean validInput;
-        boolean usernameExists;
-        boolean signedIn;
-
-        validInput = true;
-        usernameExists = false;
-        System.out.println("Enter a username: ");
-        String user = scan.nextLine();
-        signedIn = false;
-        while (!signedIn) {
-            System.out.println("Enter your password: ");
-            String pass = scan.nextLine();
-            writer.println(command);
-            writer.println(user);
-            writer.println(pass);
-            writer.flush();
-            String userEdited = reader.readLine();
-            if (userEdited.contains("success")) {
-                System.out.println("You are signed in!");
-                signedIn = true;
-            } else if (userEdited.equals("doesNotExist")) {
-                System.out.println("An account with the username you entered does not exist.");
-            } else if (userEdited.equals("passwordMismatch")) {
-                System.out.println("Error! Password doesn't match. Unable to sign in.");
-            }
-        }
-        return validInput;
     }
 }
