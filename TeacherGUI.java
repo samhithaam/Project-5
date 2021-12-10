@@ -269,23 +269,27 @@ public class Teacher {
     // Teachers can view the student responses to each question and manually assign point values for each question.
     // The point values earned on each question are inputted into the pointValues Arraylist
     public static void assignPointValues() {
-        for (int i = 0; i < Student.getStudentSubmissions().size(); i += 3) {
-            JOptionPane.showMessageDialog(null,
-                    "Question: " + Student.getStudentSubmissions().get(i),
-                    "QUESTION FOR POINT VALUE",
-                    JOptionPane.INFORMATION_MESSAGE);
-            JOptionPane.showMessageDialog(null,
-                    "Correct Answer: " + Student.getStudentSubmissions().get(i + 1),
-                    "CORRECT ANSWER FOR POINT VALUE",
-                    JOptionPane.INFORMATION_MESSAGE);
-            JOptionPane.showMessageDialog(null,
-                    "Student Answer: " + Student.getStudentSubmissions().get(i + 2),
-                    "STUDENT ANSWER FOR POINT VALUE",
-                    JOptionPane.INFORMATION_MESSAGE);
-            String pointsAssigned = JOptionPane.showInputDialog(null,
-                    "How many points would you like to assign for their answer?",
-                    "POINTS ASSIGNED", JOptionPane.QUESTION_MESSAGE);
-            pointValues.add(Integer.parseInt(pointsAssigned));
+        if (Student.getStudentSubmissions().size() == 0) {
+            JOptionPane.showMessageDialog(null, "There are no quizzes to grade!");
+        } else {
+            for (int i = 0; i < Student.getStudentSubmissions().size(); i += 3) {
+                JOptionPane.showMessageDialog(null,
+                        "Question: " + Student.getStudentSubmissions().get(i),
+                        "QUESTION FOR POINT VALUE",
+                        JOptionPane.INFORMATION_MESSAGE);
+                JOptionPane.showMessageDialog(null,
+                        "Correct Answer: " + Student.getStudentSubmissions().get(i + 1),
+                        "CORRECT ANSWER FOR POINT VALUE",
+                        JOptionPane.INFORMATION_MESSAGE);
+                JOptionPane.showMessageDialog(null,
+                        "Student Answer: " + Student.getStudentSubmissions().get(i + 2),
+                        "STUDENT ANSWER FOR POINT VALUE",
+                        JOptionPane.INFORMATION_MESSAGE);
+                String pointsAssigned = JOptionPane.showInputDialog(null,
+                        "How many points would you like to assign for their answer?",
+                        "POINTS ASSIGNED", JOptionPane.QUESTION_MESSAGE);
+                pointValues.add(Integer.parseInt(pointsAssigned));
+            } 
         }
     }
     public static void printList() throws FileNotFoundException {
