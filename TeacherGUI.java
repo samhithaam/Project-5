@@ -2,12 +2,16 @@ import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.FileNotFoundException;
+import java.lang.reflect.Array;
 import java.util.Scanner;
 import java.util.ArrayList;
 import java.io.PrintWriter;
 import java.io.IOException;
 import javax.swing.*;
 import javax.swing.JFrame;
+import java.io.*;
+import java.io.FileNotFoundException;
+
 
 public class Teacher {
 
@@ -31,6 +35,8 @@ public class Teacher {
     public static ArrayList<Integer> getPointValues() {
         return pointValues;
     }
+    
+    public static ArrayList<String> studentSubmissions = new ArrayList<>();
 
 
     // Teachers can create new quizzes with a title, choice to randomize questions, 4 answer choices, and the correct
@@ -266,32 +272,74 @@ public class Teacher {
         }
     }
 
+
     // Teachers can view the student responses to each question and manually assign point values for each question.
     // The point values earned on each question are inputted into the pointValues Arraylist
     public static void assignPointValues() {
-        if (Student.getStudentSubmissions().size() == 0) {
-            JOptionPane.showMessageDialog(null, "There are no quizzes to grade!");
+        ArrayList<String> studentSubmissions = Student.readFile("src/StudentSubmissions.txt");
+        // Student.readFile() returns null if "StudentSubmissions.txt" doesn't exist
+        // if "StudentSubmissions.txt" doesn't exist, there aren't any submissions
+        if (studentSubmissions == null || studentSubmissions.size() == 0) {
+            JOptionPane.showMessageDialog(null,
+                    "There aren't any submissions yet!",
+                    "No Submissions",
+                    JOptionPane.INFORMATION_MESSAGE);
+            return;
         } else {
-            for (int i = 0; i < Student.getStudentSubmissions().size(); i += 3) {
+            for (int i = 0; i < studentSubmissions.size(); i += 3) {
                 JOptionPane.showMessageDialog(null,
-                        "Question: " + Student.getStudentSubmissions().get(i),
+                        "Question: " + studentSubmissions.get(i),
                         "QUESTION FOR POINT VALUE",
                         JOptionPane.INFORMATION_MESSAGE);
                 JOptionPane.showMessageDialog(null,
-                        "Correct Answer: " + Student.getStudentSubmissions().get(i + 1),
+                        "Correct Answer: " + studentSubmissions.get(i + 1),
                         "CORRECT ANSWER FOR POINT VALUE",
                         JOptionPane.INFORMATION_MESSAGE);
                 JOptionPane.showMessageDialog(null,
-                        "Student Answer: " + Student.getStudentSubmissions().get(i + 2),
+                        "Student Answer: " + studentSubmissions.get(i + 2),
                         "STUDENT ANSWER FOR POINT VALUE",
                         JOptionPane.INFORMATION_MESSAGE);
                 String pointsAssigned = JOptionPane.showInputDialog(null,
                         "How many points would you like to assign for their answer?",
                         "POINTS ASSIGNED", JOptionPane.QUESTION_MESSAGE);
+                System.out.println("How many points would you like to assign for their answer?");
+                // allow teacher to manually assign points
                 pointValues.add(Integer.parseInt(pointsAssigned));
-            } 
+            }
         }
     }
+    public static ArrayList<String> readFile() {
+        // if "StudentSubmissions.txt" doesn't exist, return null
+        // avoid FileNotFoundException
+        if (!new File("src/StudentSubmissions.txt").exists()) {
+            return null;
+        }
+
+        try (BufferedReader bfr = new BufferedReader(new FileReader("src/StudentSubmissions.txt"))) {
+            ArrayList<String> fileContents = new ArrayList<>();
+            String line = new String("");
+            while ((line = bfr.readLine()) != null) {
+                fileContents.add(line);
+            }
+            if (fileContents.size() == 0) {
+                return null;
+            } else {
+                return fileContents;
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+            return null;
+        }
+    }
+    public static void updateArrayList() {
+        File teacherSubmissionsFile = new File("src/StudentSubmissions.txt");
+        // if file exists, call readFile()
+        if (teacherSubmissionsFile.exists()) {
+            teacherSubmissions = readFile();
+        }
+    }
+
+
     public static void printList() throws FileNotFoundException {
         PrintWriter pw = new PrintWriter("src/quizList.txt");
         for (String teacherSubmission : teacherSubmissions) {
@@ -299,6 +347,7 @@ public class Teacher {
         }
         pw.close();
     }
+
     public static void createMenu() {
         JFrame jf = new JFrame("Teacher Quiz Tool");
         jf.setVisible(true);
@@ -307,7 +356,7 @@ public class Teacher {
                 JFrame.DISPOSE_ON_CLOSE);
         Container content = jf.getContentPane();
         JPanel panel = new JPanel();
-        panel.setLayout(new BoxLayout(panel,BoxLayout.PAGE_AXIS));
+        panel.setLayout(new BoxLayout(panel, BoxLayout.PAGE_AXIS));
         content.add(panel, BorderLayout.CENTER);
         JLabel instructions = new JLabel("Select an Option Below");
         panel.add(instructions);
@@ -356,20 +405,20 @@ public class Teacher {
         viewSubmissionsButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                if (Student.getStudentSubmissions().size() == 0) {
+                if (studentSubmissions.size() == 0) {
                     JOptionPane.showMessageDialog(null,
                             "There are no student submissions.",
                             "No Submissions Message",
                             JOptionPane.INFORMATION_MESSAGE);
                 } else {
-                    for (int i = 0; i < Student.getStudentSubmissions().size(); i++) {
-                        if (Student.getStudentSubmissions().get(i) == null) {
+                    for (int i = 0; i < studentSubmissions.size(); i++) {
+                        if (studentSubmissions.get(i) == null) {
                             JOptionPane.showMessageDialog(null,
                                     "There is no input.",
                                     "No Input Message",
                                     JOptionPane.INFORMATION_MESSAGE);
                         } else {
-                            System.out.println(Student.getStudentSubmissions().get(i));
+                            System.out.println(studentSubmissions.get(i));
                         }
                     }
                 }
@@ -400,7 +449,9 @@ public class Teacher {
         });
 
     }
+
     public static void main(String[] args) throws IOException {
+        updateArrayList();
         createMenu();
     }
 }
