@@ -1,6 +1,7 @@
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.io.FileNotFoundException;
 import java.util.Scanner;
 import java.util.ArrayList;
 import java.io.PrintWriter;
@@ -88,7 +89,7 @@ public class Teacher {
                         && !(correctAnswer.equalsIgnoreCase(a4))) {
                     JOptionPane.showMessageDialog(null,
                             "Invalid input. The correct answer must be one of the inputted answer choices!",
-                            "QUIZ CORRECT ANSWER ERzROR MESSAGE",
+                            "QUIZ CORRECT ANSWER ERROR MESSAGE",
                             JOptionPane.INFORMATION_MESSAGE);
                 } else {
                     teacherSubmissions.add(correctAnswer);
@@ -287,6 +288,13 @@ public class Teacher {
             pointValues.add(Integer.parseInt(pointsAssigned));
         }
     }
+    public static void printList() throws FileNotFoundException {
+        PrintWriter pw = new PrintWriter("src/quizList.txt");
+        for (String teacherSubmission : teacherSubmissions) {
+            pw.println(teacherSubmission);
+        }
+        pw.close();
+    }
     public static void createMenu() {
         JFrame jf = new JFrame("Teacher Quiz Tool");
         jf.setVisible(true);
@@ -378,18 +386,17 @@ public class Teacher {
                         "Thank you for using the Teacher Quiz Tool!",
                         "Exit Message",
                         JOptionPane.INFORMATION_MESSAGE);
+                try {
+                    printList();
+                } catch (FileNotFoundException ex) {
+                    ex.printStackTrace();
+                }
                 System.exit(0);
             }
         });
 
     }
-
     public static void main(String[] args) throws IOException {
         createMenu();
-        PrintWriter pw = new PrintWriter("src/quizList.txt");
-        for (String teacherSubmission : teacherSubmissions) {
-            pw.println(teacherSubmission);
-        }
-        pw.close();
     }
 }
