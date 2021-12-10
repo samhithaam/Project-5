@@ -404,6 +404,7 @@ public class Teacher {
         viewSubmissionsButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
+                ArrayList<String> studentSubmissions = Student.readFile("src/StudentSubmissions.txt");
                 if (studentSubmissions.size() == 0) {
                     JOptionPane.showMessageDialog(null,
                             "There are no student submissions.",
