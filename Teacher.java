@@ -1,5 +1,3 @@
-package com.project5testing;
-
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -15,8 +13,7 @@ import javax.swing.text.View;
 import java.io.*;
 import java.io.FileNotFoundException;
 
-
-public class TeacherGUI implements Runnable{
+public class Teacher implements Runnable{
 
     private static ArrayList<String> teacherSubmissions = new ArrayList<>();
     private static ArrayList<Integer> pointValues = new ArrayList<>();
