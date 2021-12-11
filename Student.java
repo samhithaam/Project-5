@@ -204,15 +204,18 @@ public class Student extends JComponent implements ActionListener {
             cPanel.remove(opt2);
             int k = 0;
             ArrayList<String> studentSubmissions= readFile("src/StudentSubmissions.txt");
+            ArrayList<String> quizzes = readFile("src/quizList.txt");
 
-            if (studentSubmissions == null || studentSubmissions.size() == 0) {
-                cPanel.add(new JLabel("There aren't any submissions yet!"));
+            if (quizzes.size() == 0) {
+                JOptionPane.showMessageDialog(null, "There are no quizzes available",
+                        "No available quizzes", JOptionPane.INFORMATION_MESSAGE);
                 return;
             }
             if (Teacher.getPointValues().size() == 0) {
-                cPanel.add (new JLabel("Your teacher hasn't graded your quiz(zes) yet!"));
+                JOptionPane.showMessageDialog(null, "Your teacher hasn't graded your quiz(zes) yet!",
+                        "No Graded Quizzes", JOptionPane.INFORMATION_MESSAGE);
                 return;
-            }
+            } 
 
             for (int i = 0; i < studentSubmissions.size(); i += 3) {
                 cPanel.add(new JLabel("\nQuestion: " +studentSubmissions.get(i)));
@@ -327,6 +330,7 @@ public class Student extends JComponent implements ActionListener {
         wr.close();
         JOptionPane.showMessageDialog(null, "Your quiz has been submitted!",
                 "Quiz Submitted", JOptionPane.INFORMATION_MESSAGE);
+        System.exit(0);
         //System.out.println("submitBtn3  selected");
     }
 
@@ -353,9 +357,7 @@ public class Student extends JComponent implements ActionListener {
         }
     }
 
-    public void submitQuiz(String qName, HashMap qDetails) {
 
-    }
 
     public static ArrayList<Integer> generateRandomNums(int start, int end, int length) {
         ArrayList<Integer> list = new ArrayList<>();
@@ -398,3 +400,4 @@ public class Student extends JComponent implements ActionListener {
         return studentSubmissions;
     }
 }
+
