@@ -449,7 +449,16 @@ public class Teacher {
 
     }
 
+    public static void updateArrayList() {
+        File teacherSubmissionsFile = new File("src/quizList.txt");
+        // if file exists, call readFile()
+        if (teacherSubmissionsFile.exists()) {
+            teacherSubmissions = readFile();
+        }
+    }
+
     public static void main(String[] args) throws IOException {
+        updateArrayList();
         createMenu();
     }
 }
