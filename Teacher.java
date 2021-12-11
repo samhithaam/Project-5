@@ -9,37 +9,19 @@ import java.io.PrintWriter;
 import java.io.IOException;
 import javax.swing.*;
 import javax.swing.JFrame;
-import javax.swing.text.View;
 import java.io.*;
 import java.io.FileNotFoundException;
 
-public class Teacher implements Runnable{
+
+public class Teacher {
 
     private static ArrayList<String> teacherSubmissions = new ArrayList<>();
     private static ArrayList<Integer> pointValues = new ArrayList<>();
     private static int totalPoints;
 
-    private static Thread one = new Thread();
-    private static Thread two = new Thread();
-    private static Thread three = new Thread();
-    private static Thread four = new Thread();
-    private static Thread five = new Thread();
-    private static Thread six = new Thread();
-    private static Thread seven = new Thread();
-    private static Thread eight = new Thread();
-
-
-    private final static Object lock = new Object();
-
-    static {
-        synchronized (lock) {
-            readFile();
-        }
-    }
 
     // Calculates and returns the total points earned by the student on all the quizzes
     public static int getTotalPoints() {
-        one.start();
         for (int pointValue : pointValues) {
             totalPoints += pointValue;
         }
@@ -47,12 +29,10 @@ public class Teacher implements Runnable{
     }
 
     public static ArrayList<String> getTeacherSubmissions() {
-        two.start();
         return teacherSubmissions;
     }
 
     public static ArrayList<Integer> getPointValues() {
-        three.start();
         return pointValues;
     }
 
@@ -62,7 +42,6 @@ public class Teacher implements Runnable{
     // Teachers can create new quizzes with a title, choice to randomize questions, 4 answer choices, and the correct
     // answer. The created quizzes are added to the teacherSubmissions Arraylist
     public static void createQuiz() {
-        four.start();
         boolean validInput = false;
         int exit;
         // Accounts for if teacher wants to input more than one question, main method accounts for
@@ -71,19 +50,19 @@ public class Teacher implements Runnable{
                 "Enter quiz title:",
                 "QUIZ TITLE", JOptionPane.QUESTION_MESSAGE);
         teacherSubmissions.add(quizTitle);
-        do {
-            while (!validInput) {
-                int randomizeQuestions = JOptionPane.showConfirmDialog(null,
-                        "Would you like to randomize answers?", "RANDOMIZE",
-                        JOptionPane.YES_NO_OPTION);
-                if (randomizeQuestions == JOptionPane.NO_OPTION) {
-                    teacherSubmissions.add("n");
-                    validInput = true;
-                } else if (randomizeQuestions == JOptionPane.YES_OPTION) {
-                    teacherSubmissions.add("y");
-                    validInput = true;
-                }
+        while (!validInput) {
+            int randomizeQuestions = JOptionPane.showConfirmDialog(null,
+                    "Would you like to randomize answers?", "RANDOMIZE",
+                    JOptionPane.YES_NO_OPTION);
+            if (randomizeQuestions == JOptionPane.NO_OPTION) {
+                teacherSubmissions.add("n");
+                validInput = true;
+            } else if (randomizeQuestions == JOptionPane.YES_OPTION) {
+                teacherSubmissions.add("y");
+                validInput = true;
             }
+        }
+        do {
             validInput = false;
             String quizQuestion = JOptionPane.showInputDialog(null,
                     "Enter question:",
@@ -133,7 +112,6 @@ public class Teacher implements Runnable{
 
     // Teachers can edit the quiz information. The new quizzes are updated in the teacherSubmissions Arraylist
     public static void editQuiz() {
-        five.start();
         int exit;
         do {
             boolean validInput = false;
@@ -276,7 +254,6 @@ public class Teacher implements Runnable{
 
     // Teachers can delete a quiz. The quiz is removed from the teacherSubmissions ArrayList
     public static void deleteQuiz() {
-        six.start();
         String deleteQuizName = JOptionPane.showInputDialog(null,
                 "Enter the name of the quiz you want to delete:",
                 "DELETE QUIZ NAME", JOptionPane.QUESTION_MESSAGE);
@@ -298,8 +275,7 @@ public class Teacher implements Runnable{
 
     // Teachers can view the student responses to each question and manually assign point values for each question.
     // The point values earned on each question are inputted into the pointValues Arraylist
-    public static void assignPointValues() {
-        seven.start();
+    public static void assignPointValues() throws FileNotFoundException {
         ArrayList<String> studentSubmissions = Student.readFile("src/StudentSubmissions.txt");
         // Student.readFile() returns null if "StudentSubmissions.txt" doesn't exist
         // if "StudentSubmissions.txt" doesn't exist, there aren't any submissions
@@ -330,56 +306,46 @@ public class Teacher implements Runnable{
                 pointValues.add(Integer.parseInt(pointsAssigned));
             }
         }
+        PrintWriter pw = new PrintWriter("src/pointList.txt");
+        for (String pointList : studentSubmissions) {
+            pw.println(pointList);
+        }
+        pw.close();
     }
+
     public static ArrayList<String> readFile() {
-        synchronized (lock) {
-            // if "StudentSubmissions.txt" doesn't exist, return null
-            // avoid FileNotFoundException
-            if (!new File("src/StudentSubmissions.txt").exists()) {
-                return null;
-            }
-
-            try (BufferedReader bfr = new BufferedReader(new FileReader("src/StudentSubmissions.txt"))) {
-                ArrayList<String> fileContents = new ArrayList<>();
-                String line = new String("");
-                while ((line = bfr.readLine()) != null) {
-                    fileContents.add(line);
-                }
-                if (fileContents.size() == 0) {
-                    return null;
-                } else {
-                    return fileContents;
-                }
-            } catch (IOException e) {
-                e.printStackTrace();
-                return null;
-            }
+        // if "StudentSubmissions.txt" doesn't exist, return null
+        // avoid FileNotFoundException
+        if (!new File("src/StudentSubmissions.txt").exists()) {
+            return null;
         }
-    }
-    public static void updateArrayList() {
-        synchronized (lock) {
-            File teacherSubmissionsFile = new File("src/StudentSubmissions.txt");
-            // if file exists, call readFile()
-            if (teacherSubmissionsFile.exists()) {
-                teacherSubmissions = readFile();
+
+        try (BufferedReader bfr = new BufferedReader(new FileReader("src/StudentSubmissions.txt"))) {
+            ArrayList<String> fileContents = new ArrayList<>();
+            String line = new String("");
+            while ((line = bfr.readLine()) != null) {
+                fileContents.add(line);
             }
+            if (fileContents.size() == 0) {
+                return null;
+            } else {
+                return fileContents;
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+            return null;
         }
     }
 
-
-    public static void printList() throws FileNotFoundException {
-        synchronized (lock) {
-            PrintWriter pw = new PrintWriter("src/quizList.txt");
-            for (String teacherSubmission : teacherSubmissions) {
-                pw.println(teacherSubmission);
-            }
-            pw.close();
+    public static void printQuizList() throws FileNotFoundException {
+        PrintWriter pw = new PrintWriter("src/quizList.txt");
+        for (String teacherSubmission : teacherSubmissions) {
+            pw.println(teacherSubmission);
         }
+        pw.close();
     }
 
     public static void createMenu() {
-        eight.start();
-
         JFrame jf = new JFrame("Teacher Quiz Tool");
         jf.setVisible(true);
         jf.setSize(600, 400);
@@ -437,25 +403,29 @@ public class Teacher implements Runnable{
             @Override
             public void actionPerformed(ActionEvent e) {
                 ArrayList<String> studentSubmissions = Student.readFile("src/StudentSubmissions.txt");
-                if (studentSubmissions.size() == 0) {
+                if (studentSubmissions == null || studentSubmissions.size() == 0) {
                     JOptionPane.showMessageDialog(null,
                             "There are no student submissions.",
                             "No Submissions Message",
                             JOptionPane.INFORMATION_MESSAGE);
                 } else {
-                    for (int i = 0; i < studentSubmissions.size(); i++) {
-                        if (studentSubmissions.get(i) == null) {
-                            JOptionPane.showMessageDialog(null,
-                                    "There is no input.",
-                                    "No Input Message",
-                                    JOptionPane.INFORMATION_MESSAGE);
-                        } else {
-                            String answer = studentSubmissions.get(i);
-                            JOptionPane.showMessageDialog(null,
-                                    answer,
-                                    "Submissions Message",
-                                    JOptionPane.INFORMATION_MESSAGE);
-                        }
+                    for (int i = 0; i < studentSubmissions.size(); i += 3) {
+                        String question = studentSubmissions.get(i);
+                        String correctAnswer = studentSubmissions.get(i + 1);
+                        String studentAnswer = studentSubmissions.get(i + 2);
+                        JOptionPane.showMessageDialog(null,
+                                question,
+                                "Submissions Message",
+                                JOptionPane.INFORMATION_MESSAGE);
+                        JOptionPane.showMessageDialog(null,
+                                correctAnswer,
+                                "Submissions Message",
+                                JOptionPane.INFORMATION_MESSAGE);
+                        JOptionPane.showMessageDialog(null,
+                                studentAnswer,
+                                "Submissions Message",
+                                JOptionPane.INFORMATION_MESSAGE);
+
                     }
                 }
             }
@@ -464,7 +434,11 @@ public class Teacher implements Runnable{
         assignPointValuesButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                assignPointValues();
+                try {
+                    assignPointValues();
+                } catch (FileNotFoundException ex) {
+                    ex.printStackTrace();
+                }
             }
         });
 
@@ -476,7 +450,7 @@ public class Teacher implements Runnable{
                         "Exit Message",
                         JOptionPane.INFORMATION_MESSAGE);
                 try {
-                    printList();
+                    printQuizList();
                 } catch (FileNotFoundException ex) {
                     ex.printStackTrace();
                 }
@@ -487,58 +461,6 @@ public class Teacher implements Runnable{
     }
 
     public static void main(String[] args) throws IOException {
-        updateArrayList();
         createMenu();
-    }
-
-    @Override
-    public void run() {
-        try {
-            one.join();
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        }
-
-        try {
-            two.join();
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        }
-
-        try {
-            three.join();
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        }
-
-        try {
-            four.join();
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        }
-
-        try {
-            five.join();
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        }
-
-        try {
-            six.join();
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        }
-
-        try {
-            seven.join();
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        }
-
-        try {
-            eight.join();
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        }
     }
 }
