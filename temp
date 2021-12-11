@@ -1,0 +1,31 @@
+viewSubmissionsButton.addActionListener(new ActionListener() {
+    @Override
+    public void actionPerformed(ActionEvent e) {
+        ArrayList<String> studentSubmissions = Student.readFile("src/StudentSubmissions.txt");
+        if (studentSubmissions ==  null || studentSubmissions.size() == 0) {
+            JOptionPane.showMessageDialog(null,
+                    "There are no student submissions.",
+                    "No Submissions Message",
+                    JOptionPane.INFORMATION_MESSAGE);
+        } else {
+            for (int i = 0; i < studentSubmissions.size(); i+=3) {
+                String question = studentSubmissions.get(i);
+                String correctAnswer = studentSubmissions.get(i + 1);
+                String studentAnswer = studentSubmissions.get(i + 2);
+
+                JOptionPane.showMessageDialog(null,
+                        question,
+                        "Submissions Message",
+                        JOptionPane.INFORMATION_MESSAGE);
+                JOptionPane.showMessageDialog(null,
+                        correctAnswer,
+                        "Submissions Message",
+                        JOptionPane.INFORMATION_MESSAGE);
+                JOptionPane.showMessageDialog(null,
+                        studentAnswer,
+                        "Submissions Message",
+                        JOptionPane.INFORMATION_MESSAGE);
+            }
+        }
+    }
+});
