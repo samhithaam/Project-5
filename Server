@@ -19,6 +19,12 @@ public class Server implements Runnable {
     private static ArrayList<String> teacherUsernames = new ArrayList<>();
     private static ArrayList<String> teacherPasswords = new ArrayList<>();
 
+    private final static Object lock = new Object();
+
+    private static Thread one = new Thread();
+    private static Thread two = new Thread();
+    private static Thread three = new Thread();
+    private static Thread four = new Thread();
 
     public Server(Socket socket) {
         this.socket = socket;
@@ -65,9 +71,31 @@ public class Server implements Runnable {
         } catch (IOException e) {
             e.printStackTrace();
         }
+
+        try {
+            one.join();
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+        try {
+            two.join();
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+        try {
+            three.join();
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+        try {
+            four.join();
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
     }
 
     private void createAccount(BufferedReader reader, PrintWriter writer, boolean isTeacher) throws IOException {
+        one.start();;
         String user = JOptionPane.showInputDialog(null, "Enter the username.");
         if (user == null || user.trim().length() == 0) {
             JOptionPane.showMessageDialog(null, "Invalid input!",
@@ -81,6 +109,7 @@ public class Server implements Runnable {
                     "Card", JOptionPane.ERROR_MESSAGE);
             return;
         }
+
         boolean exists = false;
         ArrayList<String> usernames = isTeacher ? Server.teacherUsernames : Server.studentUsernames;
         ArrayList<String> passwords = isTeacher ? Server.teacherPasswords : Server.studentPasswords;
@@ -108,14 +137,17 @@ public class Server implements Runnable {
 
     }
     private void updateFiles() {
-        // update files
-        writeFile(teacherUsernames, "src/TeacherUsernames.txt");
-        writeFile(studentUsernames, "src/StudentUsernames.txt");
-        writeFile(studentPasswords, "src/StudentPasswords.txt");
-        writeFile(teacherPasswords, "src/TeacherPasswords.txt");
-
+        synchronized (lock) {
+            // update files
+            writeFile(teacherUsernames, "src/TeacherUsernames.txt");
+            writeFile(studentUsernames, "src/StudentUsernames.txt");
+            writeFile(studentPasswords, "src/StudentPasswords.txt");
+            writeFile(teacherPasswords, "src/TeacherPasswords.txt");
+        }
     }
     private void editAccount(BufferedReader reader, PrintWriter writer, boolean isTeacher) throws IOException {
+        two.start();;
+
         String userOld = JOptionPane.showInputDialog(null, "Enter the username of the account you'd like to edit.");
         if (userOld == null || userOld.trim().length() == 0) {
             JOptionPane.showMessageDialog(null, "Invalid input!",
@@ -149,6 +181,8 @@ public class Server implements Runnable {
         createAccount(reader, writer, isTeacher);
     }
     private void deleteAccount(BufferedReader reader, PrintWriter writer, boolean isTeacher) throws IOException {
+        three.start();;
+
         String userOld = JOptionPane.showInputDialog(null, "Enter the username of the account you'd like to delete.");
         if (userOld == null || userOld.trim().length() == 0) {
             JOptionPane.showMessageDialog(null, "Invalid input!",
@@ -181,6 +215,8 @@ public class Server implements Runnable {
         passwords.remove(index);
     }
     private void signIn(BufferedReader reader, PrintWriter writer, boolean isTeacher) throws IOException {
+        four.start();
+        
         String user = JOptionPane.showInputDialog(null, "Enter the username.");
         if (user == null || user.trim().length() == 0) {
             JOptionPane.showMessageDialog(null, "Invalid input!",
@@ -236,26 +272,30 @@ public class Server implements Runnable {
 
     }
     private static void writeFile(ArrayList<String> list, String fileName) {
-        try (PrintWriter pw = new PrintWriter(new FileWriter(fileName))) {
-            for (String line : list) {
-                pw.println(line);
+        synchronized (lock) {
+            try (PrintWriter pw = new PrintWriter(new FileWriter(fileName))) {
+                for (String line : list) {
+                    pw.println(line);
+                }
+            } catch (IOException e) {
+                e.printStackTrace();
             }
-        } catch (IOException e) {
-            e.printStackTrace();
         }
     }
 
     public static ArrayList<String> readFile(String fileName) {
-        try (BufferedReader bfr = new BufferedReader(new FileReader(fileName))) {
-            ArrayList<String> fileContents = new ArrayList<>();
-            String line = new String("");
-            while ((line = bfr.readLine()) != null) {
-                fileContents.add(line);
+        synchronized (lock) {
+            try (BufferedReader bfr = new BufferedReader(new FileReader(fileName))) {
+                ArrayList<String> fileContents = new ArrayList<>();
+                String line = new String("");
+                while ((line = bfr.readLine()) != null) {
+                    fileContents.add(line);
+                }
+                return fileContents;
+            } catch (IOException e) {
+                e.printStackTrace();
+                return null;
             }
-            return fileContents;
-        } catch (IOException e) {
-            e.printStackTrace();
-            return null;
         }
     }
 
@@ -276,20 +316,22 @@ public class Server implements Runnable {
     }
 
     private static void readAllFiles() {
-        File studentUsernamesFile = new File("src/StudentUsernames.txt");
-        File studentPasswordsFile = new File("src/StudentPasswords.txt");
-        File teacherUsernamesFile = new File("src/TeacherUsernames.txt");
-        File teacherPasswordsFile = new File("src/TeacherPasswords.txt");
+        synchronized (lock) {
+            File studentUsernamesFile = new File("src/StudentUsernames.txt");
+            File studentPasswordsFile = new File("src/StudentPasswords.txt");
+            File teacherUsernamesFile = new File("src/TeacherUsernames.txt");
+            File teacherPasswordsFile = new File("src/TeacherPasswords.txt");
 
-        // ensure that files exist before calling readFile to avoid FileNotFoundException or other exceptions
-        if (studentUsernamesFile.exists() && studentPasswordsFile.exists()) {
-            studentUsernames = readFile("src/StudentUsernames.txt");
-            studentPasswords = readFile("src/StudentPasswords.txt");
-        }
+            // ensure that files exist before calling readFile to avoid FileNotFoundException or other exceptions
+            if (studentUsernamesFile.exists() && studentPasswordsFile.exists()) {
+                studentUsernames = readFile("src/StudentUsernames.txt");
+                studentPasswords = readFile("src/StudentPasswords.txt");
+            }
 
-        if (teacherUsernamesFile.exists() && teacherPasswordsFile.exists()) {
-            teacherUsernames = readFile("src/TeacherUsernames.txt");
-            teacherPasswords = readFile("src/TeacherPasswords.txt");
+            if (teacherUsernamesFile.exists() && teacherPasswordsFile.exists()) {
+                teacherUsernames = readFile("src/TeacherUsernames.txt");
+                teacherPasswords = readFile("src/TeacherPasswords.txt");
+            }
         }
     }
 }
