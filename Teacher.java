@@ -281,23 +281,17 @@ public class Teacher {
         // if "StudentSubmissions.txt" doesn't exist, there aren't any submissions
         if (studentSubmissions == null || studentSubmissions.size() == 0) {
             JOptionPane.showMessageDialog(null,
-                    "There aren't any submissions yet!",
-                    "No Submissions",
+                    "There are no student submissions.",
+                    "No Submissions Message",
                     JOptionPane.INFORMATION_MESSAGE);
-            return;
         } else {
             for (int i = 0; i < studentSubmissions.size(); i += 3) {
+                String question = "Question: " + studentSubmissions.get(i);
+                question += "\nCorrect Answer: " + studentSubmissions.get(i + 1);
+                question += "\nStudent Answer: " + studentSubmissions.get(i + 2);
                 JOptionPane.showMessageDialog(null,
-                        "Question: " + studentSubmissions.get(i),
-                        "QUESTION FOR POINT VALUE",
-                        JOptionPane.INFORMATION_MESSAGE);
-                JOptionPane.showMessageDialog(null,
-                        "Correct Answer: " + studentSubmissions.get(i + 1),
-                        "CORRECT ANSWER FOR POINT VALUE",
-                        JOptionPane.INFORMATION_MESSAGE);
-                JOptionPane.showMessageDialog(null,
-                        "Student Answer: " + studentSubmissions.get(i + 2),
-                        "STUDENT ANSWER FOR POINT VALUE",
+                        question,
+                        "Submissions Message",
                         JOptionPane.INFORMATION_MESSAGE);
                 String pointsAssigned = JOptionPane.showInputDialog(null,
                         "How many points would you like to assign for their answer?",
@@ -306,6 +300,10 @@ public class Teacher {
                 pointValues.add(Integer.parseInt(pointsAssigned));
             }
         }
+        JOptionPane.showMessageDialog(null,
+                "Points Assigned!",
+                "Points Assigned Message",
+                JOptionPane.INFORMATION_MESSAGE);
         PrintWriter pw = new PrintWriter("src/pointList.txt");
         for (String pointList : studentSubmissions) {
             pw.println(pointList);
@@ -410,22 +408,13 @@ public class Teacher {
                             JOptionPane.INFORMATION_MESSAGE);
                 } else {
                     for (int i = 0; i < studentSubmissions.size(); i += 3) {
-                        String question = studentSubmissions.get(i);
-                        String correctAnswer = studentSubmissions.get(i + 1);
-                        String studentAnswer = studentSubmissions.get(i + 2);
+                        String question = "Question: " + studentSubmissions.get(i);
+                        question += "\nCorrect Answer: " + studentSubmissions.get(i + 1);
+                        question += "\nStudent Answer: " + studentSubmissions.get(i + 2);
                         JOptionPane.showMessageDialog(null,
                                 question,
                                 "Submissions Message",
                                 JOptionPane.INFORMATION_MESSAGE);
-                        JOptionPane.showMessageDialog(null,
-                                correctAnswer,
-                                "Submissions Message",
-                                JOptionPane.INFORMATION_MESSAGE);
-                        JOptionPane.showMessageDialog(null,
-                                studentAnswer,
-                                "Submissions Message",
-                                JOptionPane.INFORMATION_MESSAGE);
-
                     }
                 }
             }
