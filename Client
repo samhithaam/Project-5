@@ -6,20 +6,14 @@ import java.io.PrintWriter;
 import java.net.Socket;
 import java.net.UnknownHostException;
 
-public class Client {
+public class Client implements Runnable{
 
-    public static void main(String[] args) throws Exception {
-        JOptionPane.showMessageDialog(null, "Welcome!", "Card",
-                JOptionPane.INFORMATION_MESSAGE);
-        try {
-            connectClient();
-        } catch (IOException e) {
-            JOptionPane.showMessageDialog(null, "Unable to connect!",
-                    "Statistics Card", JOptionPane.ERROR_MESSAGE);
-        }
-    }
+    private static Thread one = new Thread();
+
+    private final static Object lock = new Object();
 
     public static void connectClient() throws IOException {
+        one.start();
         String hostName = JOptionPane.showInputDialog(null, "Enter the host name.",
                 "localhost");
         if (hostName == null || hostName.trim().length() == 0) {
@@ -88,6 +82,26 @@ public class Client {
         } catch (UnknownHostException e) {
             JOptionPane.showMessageDialog(null, "Unable to connect!",
                     "Statistics Card", JOptionPane.INFORMATION_MESSAGE);
+        }
+    }
+
+    @Override
+    public void run() {
+        try {
+            one.join();
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+    }
+
+    public static void main(String[] args) throws Exception {
+        JOptionPane.showMessageDialog(null, "Welcome!", "Card",
+                JOptionPane.INFORMATION_MESSAGE);
+        try {
+            connectClient();
+        } catch (IOException e) {
+            JOptionPane.showMessageDialog(null, "Unable to connect!",
+                    "Statistics Card", JOptionPane.ERROR_MESSAGE);
         }
     }
 }
