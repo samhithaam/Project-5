@@ -1,3 +1,5 @@
+package com.project5testing;
+
 import java.io.*;
 import java.util.ArrayList;
 
@@ -21,6 +23,8 @@ public class Quiz {
     private ArrayList<String> questions;
     private ArrayList<String> answerChoices;
     private ArrayList<String> correctAnswers;
+
+    private final static Object lock = new Object();
 
     public static void main(String[] args) {
         // can either load contents of quizzes ArrayList using teacherSubmissions ArrayList
@@ -51,123 +55,125 @@ public class Quiz {
     }
 
     public static ArrayList<Quiz> readFile(String fileName) {
-        try (BufferedReader bfr = new BufferedReader(new FileReader(fileName))) {
-            ArrayList<String> fileContents = new ArrayList<>();
-            String line = new String("");
-            while ((line = bfr.readLine()) != null) {
-                fileContents.add(line);
-            }
-
-            if (fileContents.size() == 0) {
-                return null;
-            }
-
-            // the index value of the next occurrence of 'y' and 'n' is how we're making sense of teacher input
-            // the number of times 'y' or 'n' shows up in the text file = the number of quizzes there are
-            // what the user inputs for question about randomization is consistent among every quiz (either 'y' or 'n')
-            ArrayList<Integer> indexOfYN = new ArrayList<>();
-            for (int i = 0; i < fileContents.size(); i++) {
-                if (fileContents.get(i).equalsIgnoreCase("y") ||
-                        fileContents.get(i).equalsIgnoreCase("n")) {
-                    indexOfYN.add(i);
+        synchronized (lock) {
+            try (BufferedReader bfr = new BufferedReader(new FileReader(fileName))) {
+                ArrayList<String> fileContents = new ArrayList<>();
+                String line = new String("");
+                while ((line = bfr.readLine()) != null) {
+                    fileContents.add(line);
                 }
-            }
 
-            ArrayList<Quiz> quizzesLocal = new ArrayList<>();
-            ArrayList<String> answerChoicesLocal = new ArrayList<>();
-            ArrayList<String> questionsLocal = new ArrayList<>();
-            ArrayList<String> correctAnswersLocal = new ArrayList<>();
-            int indexValue;
-            boolean randomizedLocal;
-            for (int i = 0; i < indexOfYN.size(); i++) {
-                if ((i + 1) < indexOfYN.size()) {
-                    answerChoicesLocal.clear();
-                    questionsLocal.clear();
-                    correctAnswersLocal.clear();
-                    indexValue = indexOfYN.get(i);
-
-                    randomizedLocal = fileContents.get(indexValue).equalsIgnoreCase("y");
-
-                    int questionIndex = indexValue + 1;
-                    while (questionIndex < indexOfYN.get(i + 1)) {
-                        questionsLocal.add(fileContents.get(questionIndex));
-                        if (questionIndex + 7 == indexOfYN.get(i + 1)) {
-                            break;
-                        } else {
-                            questionIndex += 6;
-                        }
-                    }
-
-                    int answerChoicesIndex = indexValue + 2;
-                    while ((answerChoicesIndex + 3) < indexOfYN.get(i + 1)) {
-                        answerChoicesLocal.add(fileContents.get(answerChoicesIndex));
-                        answerChoicesLocal.add(fileContents.get(answerChoicesIndex + 1));
-                        answerChoicesLocal.add(fileContents.get(answerChoicesIndex + 2));
-                        answerChoicesLocal.add(fileContents.get(answerChoicesIndex + 3));
-                        if (answerChoicesIndex + 6 == indexOfYN.get(i + 1)) {
-                            break;
-                        } else {
-                            answerChoicesIndex += 6;
-                        }
-                    }
-
-                    int correctAnswerIndex = indexValue + 6;
-                    while (correctAnswerIndex < indexOfYN.get(i + 1)) {
-                        correctAnswersLocal.add(fileContents.get(correctAnswerIndex));
-                        if (correctAnswerIndex + 2 == indexOfYN.get(i + 1)) {
-                            break;
-                        } else {
-                            correctAnswerIndex += 6;
-                        }
-                    }
-                    quizzesLocal.add(new Quiz(fileContents.get(indexValue - 1), randomizedLocal,
-                            questionsLocal, answerChoicesLocal, correctAnswersLocal));
+                if (fileContents.size() == 0) {
+                    return null;
                 }
-            }
-            // following lines of code are to handle when i + 1 = indexOfY_N.size()
-            // when i + 1 = indexOfY_N.size(), indexOfY_N.get(i + 1) will result in IndexOutOfBoundsException
-            // use fileContents.size() to loop through entire ArrayList as opposed to the next occurrence of 'y' or 'n'
 
-            indexValue = indexOfYN.get(indexOfYN.size() - 1);
-            randomizedLocal = fileContents.get(indexValue).equalsIgnoreCase("y");
-
-            int questionIndex = indexValue + 1;
-            while (questionIndex < fileContents.size()) {
-                questionsLocal.add(fileContents.get(questionIndex));
-                questionIndex += 6;
-            }
-
-            int answerChoicesIndex = indexValue + 2;
-            while ((answerChoicesIndex + 3) < fileContents.size()) {
-                answerChoicesLocal.add(fileContents.get(answerChoicesIndex));
-                answerChoicesLocal.add(fileContents.get(answerChoicesIndex + 1));
-                answerChoicesLocal.add(fileContents.get(answerChoicesIndex + 2));
-                answerChoicesLocal.add(fileContents.get(answerChoicesIndex + 3));
-                answerChoicesIndex += 6;
-            }
-
-            int correctAnswerIndex = indexValue + 6;
-            while (correctAnswerIndex < fileContents.size()) {
-                correctAnswersLocal.add(fileContents.get(correctAnswerIndex));
-                correctAnswerIndex += 6;
-            }
-
-            quizzesLocal.add(new Quiz(fileContents.get(indexValue - 1), randomizedLocal,
-                    questionsLocal, answerChoicesLocal, correctAnswersLocal));
-
-            // update quizOutput.txt with contents of quizzesLocal
-            try (PrintWriter pw = new PrintWriter(new FileWriter("src/quizOutput.txt"))) {
-                for (Quiz quiz : quizzesLocal) {
-                    pw.println(quiz.toString()); // call overridden toString method
+                // the index value of the next occurrence of 'y' and 'n' is how we're making sense of teacher input
+                // the number of times 'y' or 'n' shows up in the text file = the number of quizzes there are
+                // what the user inputs for question about randomization is consistent among every quiz (either 'y' or 'n')
+                ArrayList<Integer> indexOfYN = new ArrayList<>();
+                for (int i = 0; i < fileContents.size(); i++) {
+                    if (fileContents.get(i).equalsIgnoreCase("y") ||
+                            fileContents.get(i).equalsIgnoreCase("n")) {
+                        indexOfYN.add(i);
+                    }
                 }
+
+                ArrayList<Quiz> quizzesLocal = new ArrayList<>();
+                ArrayList<String> answerChoicesLocal = new ArrayList<>();
+                ArrayList<String> questionsLocal = new ArrayList<>();
+                ArrayList<String> correctAnswersLocal = new ArrayList<>();
+                int indexValue;
+                boolean randomizedLocal;
+                for (int i = 0; i < indexOfYN.size(); i++) {
+                    if ((i + 1) < indexOfYN.size()) {
+                        answerChoicesLocal.clear();
+                        questionsLocal.clear();
+                        correctAnswersLocal.clear();
+                        indexValue = indexOfYN.get(i);
+
+                        randomizedLocal = fileContents.get(indexValue).equalsIgnoreCase("y");
+
+                        int questionIndex = indexValue + 1;
+                        while (questionIndex < indexOfYN.get(i + 1)) {
+                            questionsLocal.add(fileContents.get(questionIndex));
+                            if (questionIndex + 7 == indexOfYN.get(i + 1)) {
+                                break;
+                            } else {
+                                questionIndex += 6;
+                            }
+                        }
+
+                        int answerChoicesIndex = indexValue + 2;
+                        while ((answerChoicesIndex + 3) < indexOfYN.get(i + 1)) {
+                            answerChoicesLocal.add(fileContents.get(answerChoicesIndex));
+                            answerChoicesLocal.add(fileContents.get(answerChoicesIndex + 1));
+                            answerChoicesLocal.add(fileContents.get(answerChoicesIndex + 2));
+                            answerChoicesLocal.add(fileContents.get(answerChoicesIndex + 3));
+                            if (answerChoicesIndex + 6 == indexOfYN.get(i + 1)) {
+                                break;
+                            } else {
+                                answerChoicesIndex += 6;
+                            }
+                        }
+
+                        int correctAnswerIndex = indexValue + 6;
+                        while (correctAnswerIndex < indexOfYN.get(i + 1)) {
+                            correctAnswersLocal.add(fileContents.get(correctAnswerIndex));
+                            if (correctAnswerIndex + 2 == indexOfYN.get(i + 1)) {
+                                break;
+                            } else {
+                                correctAnswerIndex += 6;
+                            }
+                        }
+                        quizzesLocal.add(new Quiz(fileContents.get(indexValue - 1), randomizedLocal,
+                                questionsLocal, answerChoicesLocal, correctAnswersLocal));
+                    }
+                }
+                // following lines of code are to handle when i + 1 = indexOfY_N.size()
+                // when i + 1 = indexOfY_N.size(), indexOfY_N.get(i + 1) will result in IndexOutOfBoundsException
+                // use fileContents.size() to loop through entire ArrayList as opposed to the next occurrence of 'y' or 'n'
+
+                indexValue = indexOfYN.get(indexOfYN.size() - 1);
+                randomizedLocal = fileContents.get(indexValue).equalsIgnoreCase("y");
+
+                int questionIndex = indexValue + 1;
+                while (questionIndex < fileContents.size()) {
+                    questionsLocal.add(fileContents.get(questionIndex));
+                    questionIndex += 6;
+                }
+
+                int answerChoicesIndex = indexValue + 2;
+                while ((answerChoicesIndex + 3) < fileContents.size()) {
+                    answerChoicesLocal.add(fileContents.get(answerChoicesIndex));
+                    answerChoicesLocal.add(fileContents.get(answerChoicesIndex + 1));
+                    answerChoicesLocal.add(fileContents.get(answerChoicesIndex + 2));
+                    answerChoicesLocal.add(fileContents.get(answerChoicesIndex + 3));
+                    answerChoicesIndex += 6;
+                }
+
+                int correctAnswerIndex = indexValue + 6;
+                while (correctAnswerIndex < fileContents.size()) {
+                    correctAnswersLocal.add(fileContents.get(correctAnswerIndex));
+                    correctAnswerIndex += 6;
+                }
+
+                quizzesLocal.add(new Quiz(fileContents.get(indexValue - 1), randomizedLocal,
+                        questionsLocal, answerChoicesLocal, correctAnswersLocal));
+
+                // update quizOutput.txt with contents of quizzesLocal
+                try (PrintWriter pw = new PrintWriter(new FileWriter("src/quizOutput.txt"))) {
+                    for (Quiz quiz : quizzesLocal) {
+                        pw.println(quiz.toString()); // call overridden toString method
+                    }
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+
+                return quizzesLocal;
             } catch (IOException e) {
                 e.printStackTrace();
+                return null;
             }
-
-            return quizzesLocal;
-        } catch (IOException e) {
-            e.printStackTrace();
-            return null;
         }
     }
 
@@ -221,9 +227,11 @@ public class Quiz {
 
 
     public static void updateArrayList() {
-        File quizListFile = new File("src/quizList.txt");
-        if (quizListFile.exists()) {
-            quizzes = readFile("src/quizList.txt");
+        synchronized (lock) {
+            File quizListFile = new File("src/quizList.txt");
+            if (quizListFile.exists()) {
+                quizzes = readFile("src/quizList.txt");
+            }
         }
     }
 
