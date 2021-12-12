@@ -9,11 +9,20 @@ import javax.swing.*;
 import javax.swing.JFrame;
 import java.io.*;
 
-public class Teacher {
+public class TeacherGUI implements Runnable {
 
     private static ArrayList<String> teacherSubmissions = new ArrayList<>();
     private static ArrayList<Integer> pointValues = new ArrayList<>();
     private static int totalPoints = 0;
+
+    private static Thread one = new Thread();
+    private static Thread two = new Thread();
+    private static Thread three = new Thread();
+    private static Thread four = new Thread();
+    private static Thread five = new Thread();
+    private static Thread six = new Thread();
+
+    private final static Object lock = new Object();
 
     // Calculates and returns the total points earned by the student on all the quizzes
     public static int getTotalPoints() {
@@ -35,6 +44,7 @@ public class Teacher {
     // Teachers can create new quizzes with a title, choice to randomize questions, 4 answer choices, and the correct
     // answer. The created quizzes are added to the teacherSubmissions Arraylist
     public static void createQuiz() {
+        one.start();
         boolean validInput = false;
         int exit;
         // Accounts for if teacher wants to input more than one question, main method accounts for
@@ -105,6 +115,8 @@ public class Teacher {
 
     // Teachers can edit the quiz information. The new quizzes are updated in the teacherSubmissions Arraylist
     public static void editQuiz() {
+        two.start();
+
         int exit;
         do {
             boolean validInput = false;
@@ -247,6 +259,8 @@ public class Teacher {
 
     // Teachers can delete a quiz. The quiz is removed from the teacherSubmissions ArrayList
     public static void deleteQuiz() {
+        three.start();
+
         String deleteQuizName = JOptionPane.showInputDialog(null,
                 "Enter the name of the quiz you want to delete:",
                 "DELETE QUIZ NAME", JOptionPane.QUESTION_MESSAGE);
@@ -269,6 +283,8 @@ public class Teacher {
     // Teachers can view the student responses to each question and manually assign point values for each question.
     // The point values earned on each question are inputted into the pointValues Arraylist
     public static void assignPointValues() throws FileNotFoundException {
+        four.start();
+
         ArrayList<String> studentSubmissions = Student.readFile("src/StudentSubmissions.txt");
         // Student.readFile() returns null if "StudentSubmissions.txt" doesn't exist
         // if "StudentSubmissions.txt" doesn't exist, there aren't any submissions
@@ -306,6 +322,8 @@ public class Teacher {
     }
 
     public static void printQuizList() throws FileNotFoundException {
+        five.start();
+
         PrintWriter pw = new PrintWriter("src/quizList.txt");
         for (String teacherSubmission : teacherSubmissions) {
             pw.println(teacherSubmission);
@@ -314,6 +332,8 @@ public class Teacher {
     }
 
     public static void createMenu() {
+        six.start();
+
         JFrame jf = new JFrame("Teacher Quiz Tool");
         jf.setVisible(true);
         jf.setSize(600, 400);
@@ -420,10 +440,12 @@ public class Teacher {
     }
 
     public static void updateArrayList() {
-        File teacherSubmissionsFile = new File("src/quizList.txt");
-        // if file exists, call readFile()
-        if (teacherSubmissionsFile.exists()) {
-            teacherSubmissions.addAll(Student.readFile("src/quizList.txt"));
+        synchronized (lock) {
+            File teacherSubmissionsFile = new File("src/quizList.txt");
+            // if file exists, call readFile()
+            if (teacherSubmissionsFile.exists()) {
+                teacherSubmissions.addAll(Student.readFile("src/quizList.txt"));
+            }
         }
     }
 
@@ -431,4 +453,43 @@ public class Teacher {
         updateArrayList();
         createMenu();
     }
-}
+
+    public void run() {
+        try {
+            one.join();
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+
+        try {
+            two.join();
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+
+        try {
+            three.join();
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+
+        try {
+            four.join();
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+
+        try {
+            five.join();
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+
+        try {
+            six.join();
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+    }
+
+    }
