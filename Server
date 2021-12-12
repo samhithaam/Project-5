@@ -216,7 +216,7 @@ public class Server implements Runnable {
     }
     private void signIn(BufferedReader reader, PrintWriter writer, boolean isTeacher) throws IOException {
         four.start();
-        
+
         String user = JOptionPane.showInputDialog(null, "Enter the username.");
         if (user == null || user.trim().length() == 0) {
             JOptionPane.showMessageDialog(null, "Invalid input!",
