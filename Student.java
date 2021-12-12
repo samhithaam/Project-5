@@ -1,3 +1,5 @@
+package com.project5testing;
+
 import java.awt.BorderLayout;
 import java.awt.Component;
 import java.awt.Container;
@@ -17,7 +19,7 @@ import javax.swing.JPanel;
 import javax.swing.JRadioButton;
 import javax.swing.JScrollPane;
 
-public class Student extends JComponent implements ActionListener {
+public class StudentGUI extends JComponent implements ActionListener {
     private static JButton submitBtn1;
     private static JButton submitBtn2;
     private static JButton submitBtn3;
@@ -25,11 +27,23 @@ public class Student extends JComponent implements ActionListener {
     private static ButtonGroup bgroup;
     private static JRadioButton opt1;
     private static JRadioButton opt2;
-    static boolean option1Selected; 
-    static boolean option2Selected; 
+    static boolean option1Selected;
+    static boolean option2Selected;
     private static JPanel cPanel;
     private static JPanel sPanel;
     private static ArrayList<String> studentSubmissions = new ArrayList<>();
+
+    private static Thread one = new Thread();
+    private static Thread two = new Thread();
+    private static Thread three = new Thread();
+    private static Thread four = new Thread();
+    private static Thread five = new Thread();
+    private static Thread six = new Thread();
+    private static Thread seven = new Thread();
+    private static Thread eight = new Thread();
+
+
+    private final static Object lock = new Object();
 
     public static void main(String [] args) {
         updateArrayList();
@@ -37,6 +51,7 @@ public class Student extends JComponent implements ActionListener {
     }
 
     public static void start() {
+        one.start();
         JFrame frame = new JFrame();
         frame.setTitle("Student");
         Container content = frame.getContentPane();
@@ -144,6 +159,7 @@ public class Student extends JComponent implements ActionListener {
         });
     }
     protected static void submitBtn1Function(ArrayList<JRadioButton> quizName) {
+        two.start();
         if (!option1Selected && !option2Selected) {
             JOptionPane.showMessageDialog(null, "Please make a selection!",
                     "Error", JOptionPane.ERROR_MESSAGE);
@@ -208,6 +224,7 @@ public class Student extends JComponent implements ActionListener {
     }
     protected static void submitBtn2Function(String quizTitle, ArrayList studentSubmissions,
                                              ArrayList<JRadioButton> quizChoice) throws FileNotFoundException {
+        three.start();
         if ("".equals(quizTitle)) {
             JOptionPane.showMessageDialog(null, "Please make a selection!",
                     "Error", JOptionPane.ERROR_MESSAGE);
@@ -284,6 +301,7 @@ public class Student extends JComponent implements ActionListener {
         }
     }
     protected static void submitBtn3Function(ArrayList<String> array) throws IOException {
+        four.start();
         PrintWriter pw = new PrintWriter("src/StudentSubmissions.txt");
         for (String s : array) {
             pw.write(s + "\n");
@@ -311,8 +329,9 @@ public class Student extends JComponent implements ActionListener {
             option2Selected = true;
         }
     }
-    
+
     public static ArrayList<Integer> generateRandomNums(int start, int end, int length) {
+        four.start();
         ArrayList<Integer> list = new ArrayList<>();
         int num = 0;
         while (list.size() != length) {
@@ -328,31 +347,62 @@ public class Student extends JComponent implements ActionListener {
         return list;
     }
     public static ArrayList<String> readFile(String fileName) {
-        if (!new File(fileName).exists()) {
-            return null;
-        }
-        try (BufferedReader bfr = new BufferedReader(new FileReader(fileName))) {
-            ArrayList<String> fileContents = new ArrayList<>();
-            String line = new String("");
-            while ((line = bfr.readLine()) != null) {
-                fileContents.add(line);
-            }
-            if (fileContents.size() == 0) {
+        synchronized (lock) {
+            if (!new File(fileName).exists()) {
                 return null;
-            } else {
-                return fileContents;
             }
-        } catch (IOException e) {
-            e.printStackTrace();
-            return null;
+            try (BufferedReader bfr = new BufferedReader(new FileReader(fileName))) {
+                ArrayList<String> fileContents = new ArrayList<>();
+                String line = new String("");
+                while ((line = bfr.readLine()) != null) {
+                    fileContents.add(line);
+                }
+                if (fileContents.size() == 0) {
+                    return null;
+                } else {
+                    return fileContents;
+                }
+            } catch (IOException e) {
+                e.printStackTrace();
+                return null;
+            }
         }
     }
 
 
     public static void updateArrayList() {
-        File studentSubmissionsFile = new File("src/StudentSubmissions.txt");
-        if (studentSubmissionsFile.exists()) {
-            studentSubmissions.addAll(readFile("src/StudentSubmissions.txt"));
+        synchronized (lock) {
+            File studentSubmissionsFile = new File("src/StudentSubmissions.txt");
+            if (studentSubmissionsFile.exists()) {
+                studentSubmissions.addAll(readFile("src/StudentSubmissions.txt"));
+            }
         }
+    }
+
+    public void run() throws InterruptedException {
+        try {
+            one.join();
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+
+        try {
+            two.join();
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+
+        try {
+            three.join();
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+
+        try {
+            four.join();
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+
     }
 }
