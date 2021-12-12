@@ -3,9 +3,7 @@ import java.awt.Component;
 import java.awt.Container;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.io.BufferedWriter;
 import java.io.*;
-import java.io.FileWriter;
 import java.io.IOException;
 import java.util.*;
 import javax.swing.BoxLayout;
@@ -27,8 +25,8 @@ public class Student extends JComponent implements ActionListener {
     private static ButtonGroup bgroup;
     private static JRadioButton opt1;
     private static JRadioButton opt2;
-    static boolean option1Selected; //opt1.isSelected();
-    static boolean option2Selected; //opt2.isSelected();
+    static boolean option1Selected; 
+    static boolean option2Selected; 
     private static JPanel cPanel;
     private static JPanel sPanel;
     private static ArrayList<String> studentSubmissions = new ArrayList<>();
@@ -313,8 +311,7 @@ public class Student extends JComponent implements ActionListener {
             option2Selected = true;
         }
     }
-    public void submitQuiz(String qName, HashMap qDetails) {
-    }
+    
     public static ArrayList<Integer> generateRandomNums(int start, int end, int length) {
         ArrayList<Integer> list = new ArrayList<>();
         int num = 0;
@@ -350,14 +347,12 @@ public class Student extends JComponent implements ActionListener {
             return null;
         }
     }
-    public static ArrayList<String> getStudentSubmissions() {
-        return studentSubmissions;
-    }
+
 
     public static void updateArrayList() {
         File studentSubmissionsFile = new File("src/StudentSubmissions.txt");
         if (studentSubmissionsFile.exists()) {
-            studentSubmissions = readFile("src/StudentSubmissions.txt");
+            studentSubmissions.addAll(readFile("src/StudentSubmissions.txt"));
         }
     }
 }
