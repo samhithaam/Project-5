@@ -2,23 +2,18 @@ import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.FileNotFoundException;
-import java.lang.reflect.Array;
-import java.util.Scanner;
 import java.util.ArrayList;
 import java.io.PrintWriter;
 import java.io.IOException;
 import javax.swing.*;
 import javax.swing.JFrame;
 import java.io.*;
-import java.io.FileNotFoundException;
-
 
 public class Teacher {
 
     private static ArrayList<String> teacherSubmissions = new ArrayList<>();
     private static ArrayList<Integer> pointValues = new ArrayList<>();
-    private static int totalPoints;
-
+    private static int totalPoints = 0;
 
     // Calculates and returns the total points earned by the student on all the quizzes
     public static int getTotalPoints() {
@@ -35,8 +30,6 @@ public class Teacher {
     public static ArrayList<Integer> getPointValues() {
         return pointValues;
     }
-
-    public static ArrayList<String> studentSubmissions = new ArrayList<>();
 
 
     // Teachers can create new quizzes with a title, choice to randomize questions, 4 answer choices, and the correct
@@ -284,6 +277,7 @@ public class Teacher {
                     "There are no student submissions.",
                     "No Submissions Message",
                     JOptionPane.INFORMATION_MESSAGE);
+            return;
         } else {
             for (int i = 0; i < studentSubmissions.size(); i += 3) {
                 String question = "Question: " + studentSubmissions.get(i);
@@ -305,34 +299,10 @@ public class Teacher {
                 "Points Assigned Message",
                 JOptionPane.INFORMATION_MESSAGE);
         PrintWriter pw = new PrintWriter("src/pointList.txt");
-        for (String pointList : studentSubmissions) {
-            pw.println(pointList);
+        for (int point : pointValues) {
+            pw.println(point);
         }
         pw.close();
-    }
-
-    public static ArrayList<String> readFile() {
-        // if "StudentSubmissions.txt" doesn't exist, return null
-        // avoid FileNotFoundException
-        if (!new File("src/StudentSubmissions.txt").exists()) {
-            return null;
-        }
-
-        try (BufferedReader bfr = new BufferedReader(new FileReader("src/StudentSubmissions.txt"))) {
-            ArrayList<String> fileContents = new ArrayList<>();
-            String line = new String("");
-            while ((line = bfr.readLine()) != null) {
-                fileContents.add(line);
-            }
-            if (fileContents.size() == 0) {
-                return null;
-            } else {
-                return fileContents;
-            }
-        } catch (IOException e) {
-            e.printStackTrace();
-            return null;
-        }
     }
 
     public static void printQuizList() throws FileNotFoundException {
@@ -453,7 +423,7 @@ public class Teacher {
         File teacherSubmissionsFile = new File("src/quizList.txt");
         // if file exists, call readFile()
         if (teacherSubmissionsFile.exists()) {
-            teacherSubmissions = readFile();
+            teacherSubmissions.addAll(Student.readFile("src/quizList.txt"));
         }
     }
 
