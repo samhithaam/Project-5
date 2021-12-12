@@ -41,6 +41,27 @@ public class Server implements Runnable {
     }
 
     public void run() {
+        try {
+            one.join();
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+        try {
+            two.join();
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+        try {
+            three.join();
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+        try {
+            four.join();
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+
         BufferedReader reader = null;
         try {
             reader = new BufferedReader(new InputStreamReader(socket.getInputStream()));
