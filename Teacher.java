@@ -9,7 +9,7 @@ import javax.swing.*;
 import javax.swing.JFrame;
 import java.io.*;
 
-public class TeacherGUI implements Runnable {
+public class Teacher implements Runnable {
 
     private static ArrayList<String> teacherSubmissions = new ArrayList<>();
     private static ArrayList<Integer> pointValues = new ArrayList<>();
@@ -251,7 +251,7 @@ public class TeacherGUI implements Runnable {
                 }
             }
             exit = JOptionPane.showConfirmDialog(null,
-                    "Would you like to edit another quiz", "CONTINUE",
+                    "Would you like to edit another quiz?", "CONTINUE",
                     JOptionPane.YES_NO_OPTION);
         } while (exit == JOptionPane.YES_OPTION);
         JOptionPane.showMessageDialog(null, "Successfully Edited!");
@@ -265,11 +265,15 @@ public class TeacherGUI implements Runnable {
                 "Enter the name of the quiz you want to delete:",
                 "DELETE QUIZ NAME", JOptionPane.QUESTION_MESSAGE);
         boolean quizExists = false;
+        int counter = 0;
         for (int i = 0; i < teacherSubmissions.size(); i++) {
             if (teacherSubmissions.get(i).equalsIgnoreCase(deleteQuizName)) {
                 quizExists = true;
-                for (int j = 0; j < 8; j++) {
-                    teacherSubmissions.remove(i);
+                while (i < teacherSubmissions.size() && (!teacherSubmissions.get(i).equals("y")
+                        || !teacherSubmissions.get(counter).equals("n"))) {
+                    if (teacherSubmissions.get(i) != null) {
+                        teacherSubmissions.remove(i);
+                    }
                 }
                 JOptionPane.showMessageDialog(null, "Quiz Deleted!");
             }
@@ -444,7 +448,8 @@ public class TeacherGUI implements Runnable {
             File teacherSubmissionsFile = new File("src/quizList.txt");
             // if file exists, call readFile()
             if (teacherSubmissionsFile.exists()) {
-                teacherSubmissions.addAll(Student.readFile("src/quizList.txt"));
+                if (Student.readFile("src/quizList.txt") != null)
+                    teacherSubmissions.addAll(Student.readFile("src/quizList.txt"));
             }
         }
     }
@@ -491,5 +496,4 @@ public class TeacherGUI implements Runnable {
             e.printStackTrace();
         }
     }
-
-    }
+}
