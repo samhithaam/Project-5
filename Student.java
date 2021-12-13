@@ -1,5 +1,3 @@
-package com.project5testing;
-
 import java.awt.BorderLayout;
 import java.awt.Component;
 import java.awt.Container;
@@ -31,27 +29,16 @@ public class StudentGUI extends JComponent implements ActionListener {
     static boolean option2Selected;
     private static JPanel cPanel;
     private static JPanel sPanel;
-    private static ArrayList<String> studentSubmissions = new ArrayList<>();
-
-    private static Thread one = new Thread();
-    private static Thread two = new Thread();
-    private static Thread three = new Thread();
-    private static Thread four = new Thread();
-    private static Thread five = new Thread();
-    private static Thread six = new Thread();
-    private static Thread seven = new Thread();
-    private static Thread eight = new Thread();
-
+    private static List<String> studentSubmissions = Collections.synchronizedList(new ArrayList<>());
 
     private final static Object lock = new Object();
 
-    public static void main(String [] args) {
+    public static void main(String[] args) {
         updateArrayList();
         start();
     }
 
     public static void start() {
-        one.start();
         JFrame frame = new JFrame();
         frame.setTitle("Student");
         Container content = frame.getContentPane();
@@ -99,7 +86,7 @@ public class StudentGUI extends JComponent implements ActionListener {
         scrollPane.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
         scrollPane.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED);
         content.add(scrollPane, BorderLayout.CENTER);
-        frame.setSize(900, 600);
+        frame.setSize(900, 900);
         frame.setLocationRelativeTo(null);
         frame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
         frame.setVisible(true);
@@ -158,8 +145,8 @@ public class StudentGUI extends JComponent implements ActionListener {
             }
         });
     }
+
     protected static void submitBtn1Function(ArrayList<JRadioButton> quizName) {
-        two.start();
         if (!option1Selected && !option2Selected) {
             JOptionPane.showMessageDialog(null, "Please make a selection!",
                     "Error", JOptionPane.ERROR_MESSAGE);
@@ -167,152 +154,163 @@ public class StudentGUI extends JComponent implements ActionListener {
             cPanel.remove(opt1);
             cPanel.remove(opt2);
             int i = 0;
-            if (readFile("src/quizList.txt") == null || readFile("src/quizList.txt").size() == 0) {
-                JOptionPane.showMessageDialog(null, "There aren't any quizzes yet!",
-                        "No Quiz", JOptionPane.INFORMATION_MESSAGE);
-                System.exit(0);
-                return;
+            synchronized (lock) {
+                if (readFile("src/quizList.txt") == null || readFile("src/quizList.txt").size() == 0) {
+                    JOptionPane.showMessageDialog(null, "There aren't any quizzes yet!",
+                            "No Quiz", JOptionPane.INFORMATION_MESSAGE);
+                    System.exit(0);
+                    return;
+                }
+                for (Quiz quiz : Objects.requireNonNull(Quiz.readFile("src/quizList.txt"))) {
+                    quizName.add(new JRadioButton(quiz.getQuizName()));
+                    quizName.get(i).setText(quiz.getQuizName());
+                    cPanel.add(quizName.get(i));
+                    i++;
+                }
+                cPanel.revalidate();
+                cPanel.repaint();
+                sPanel.remove(submitBtn1);
+                sPanel.add(submitBtn2);
+                sPanel.revalidate();
+                sPanel.repaint();
             }
-            for (Quiz quiz : Objects.requireNonNull(Quiz.readFile("src/quizList.txt"))) {
-                quizName.add(new JRadioButton(quiz.getQuizName()));
-                quizName.get(i).setText(quiz.getQuizName());
-                cPanel.add(quizName.get(i));
-                i++;
-            }
-            cPanel.revalidate();
-            cPanel.repaint();
-            sPanel.remove(submitBtn1);
-            sPanel.add(submitBtn2);
-            sPanel.revalidate();
-            sPanel.repaint();
         } else if (option2Selected) {
             cPanel.remove(opt1);
             cPanel.remove(opt2);
             int k = 0;
-            ArrayList<String> studentSubmissions= readFile("src/StudentSubmissions.txt");
-            if (studentSubmissions == null || studentSubmissions.size() == 0) {
-                JOptionPane.showMessageDialog(null, "There aren't any submissions yet!",
-                        "No graded Quiz", JOptionPane.INFORMATION_MESSAGE);
-                System.exit(0);
-                return;
+            List<String> studentSubmissions = readFile("src/StudentSubmissions.txt");
+            synchronized (lock) {
+                if (studentSubmissions == null || studentSubmissions.size() == 0) {
+                    JOptionPane.showMessageDialog(null, "There aren't any submissions yet!",
+                            "No graded Quiz", JOptionPane.INFORMATION_MESSAGE);
+                    System.exit(0);
+                    return;
+                }
+                List<String> points = readFile("src/pointList.txt"); //arrays list contains points student earn for each q
+                if (points == null || points.size() == 0) {
+                    JOptionPane.showMessageDialog(null, "Your teacher hasn't graded your quiz(zes) yet!",
+                            "No graded Quiz", JOptionPane.INFORMATION_MESSAGE);
+                    System.exit(0);
+                    return;
+                }
+                for (int i = 0; i < studentSubmissions.size(); i += 3) {
+                    cPanel.add(new JLabel("Question: " + studentSubmissions.get(i)));
+                    cPanel.add(new JLabel("Correct Answer: " + studentSubmissions.get(i + 1)));
+                    cPanel.add(new JLabel("Your Answer: " + studentSubmissions.get(i + 2)));
+                    cPanel.add(new JLabel("Points Earned: " + points.get(i / 3)));
+                }
+                int total = 0;
+                for (String str : points) {
+                    total += Integer.parseInt(str);
+                }
+                cPanel.add(new JLabel("Total Points: " + total));
+                cPanel.revalidate();
+                cPanel.repaint();
+                sPanel.remove(submitBtn1);
+                sPanel.add(submitBtn3);
+                sPanel.revalidate();
+                sPanel.repaint();
             }
-            ArrayList<String> points = readFile("src/pointList.txt"); //arrays list contains points student earn for each q
-            if (points == null || points.size() == 0) {
-                JOptionPane.showMessageDialog(null, "Your teacher hasn't graded your quiz(zes) yet!",
-                        "No graded Quiz", JOptionPane.INFORMATION_MESSAGE);
-                System.exit(0);
-                return;
-            }
-            for (int i = 0; i < studentSubmissions.size(); i += 3) {
-                cPanel.add(new JLabel("Question: " +studentSubmissions.get(i)));
-                cPanel.add(new JLabel("Correct Answer: " + studentSubmissions.get(i + 1)));
-                cPanel.add(new JLabel("Your Answer: " + studentSubmissions.get(i + 2)));
-                cPanel.add(new JLabel("Points Earned: " + points.get(i / 3)));
-            }
-            int total = 0;
-            for (String str : points) {
-                total += Integer.parseInt(str);
-            }
-            cPanel.add(new JLabel("Total Points: " + total));
-            cPanel.revalidate();
-            cPanel.repaint();
-            sPanel.remove(submitBtn1);
-            sPanel.add(submitBtn3);
-            sPanel.revalidate();
-            sPanel.repaint();
         }
     }
-    protected static void submitBtn2Function(String quizTitle, ArrayList studentSubmissions,
-                                             ArrayList<JRadioButton> quizChoice) throws FileNotFoundException {
-        three.start();
-        if ("".equals(quizTitle)) {
-            JOptionPane.showMessageDialog(null, "Please make a selection!",
-                    "Error", JOptionPane.ERROR_MESSAGE);
-        } else {
-            Component[] c1 = cPanel.getComponents();
-            for (int i = 0; i < c1.length; i++) {
-                cPanel.remove(c1[i]);
-            }
-            JScrollPane qz = new JScrollPane();
-            ArrayList<Quiz> quizzes = Quiz.readFile("src/quizList.txt");
-            for (Quiz quiz : Objects.requireNonNull(quizzes)) {
-                if (quiz.getQuizName().equalsIgnoreCase(quizTitle)) {
-                    if (!quiz.isRandomized()) {
-                        int pos = 0;
-                        int j = 0;
-                        for (int i = 0; i < quiz.getQuestions().size(); i++) {
-                            studentSubmissions.add(quiz.getQuestions().get(i));
-                            studentSubmissions.add(quiz.getCorrectAnswers().get(i));
-                            cPanel.add(new JLabel(quiz.getQuestions().get(i))); // print question
-                            quizChoice.add(new JRadioButton(quiz.getAnswerChoices().get(pos)));
-                            cPanel.add(quizChoice.get(j));
-                            j++;
-                            quizChoice.add(new JRadioButton(quiz.getAnswerChoices().get(pos + 1))); // print option
-                            cPanel.add(quizChoice.get(j));
-                            j++;
-                            quizChoice.add(new JRadioButton(quiz.getAnswerChoices().get(pos + 2))); // print option
-                            cPanel.add(quizChoice.get(j));
-                            j++;
-                            quizChoice.add(new JRadioButton(quiz.getAnswerChoices().get(pos + 3))); // print option
-                            cPanel.add(quizChoice.get(j));
-                            j++;
-                            pos += 4;
-                        }
-                    } else {
-                        int pos = 0;
-                        int j = 0;
-                        int index = 0;
-                        ArrayList<Integer> randomNumsQ = generateRandomNums(0, quiz.getQuestions().size(),
-                                quiz.getQuestions().size());
-                        for (Integer integer : randomNumsQ) {
-                            index = integer;
-                            studentSubmissions.add(quiz.getQuestions().get(index));
-                            studentSubmissions.add(quiz.getCorrectAnswers().get(index));
-                            cPanel.add(new JLabel(quiz.getQuestions().get(index)));
-                            // randomize order of answer choices when printed to terminal
-                            pos = index * 4;
-                            // for each question, a list of random numbers is required
-                            ArrayList<Integer> randomNumsA = generateRandomNums(1, 3, 3);
-                            quizChoice.add(new JRadioButton(quiz.getAnswerChoices().get(pos)));
-                            cPanel.add(quizChoice.get(j));
-                            j++;
-                            quizChoice.add(new JRadioButton(quiz.getAnswerChoices().get(pos + randomNumsA.get(0))));
-                            cPanel.add(quizChoice.get(j));
-                            j++;
-                            quizChoice.add(new JRadioButton(quiz.getAnswerChoices().get(pos + randomNumsA.get(1))));
-                            cPanel.add(quizChoice.get(j));
-                            j++;
-                            quizChoice.add(new JRadioButton(quiz.getAnswerChoices().get(pos + randomNumsA.get(2))));
-                            cPanel.add(quizChoice.get(j));
-                            j++;
+
+    protected static void submitBtn2Function(String quizTitle, List studentSubmissions,
+                                             List<JRadioButton> quizChoice) throws FileNotFoundException {
+        synchronized (lock) {
+            if ("".equals(quizTitle)) {
+                JOptionPane.showMessageDialog(null, "Please make a selection!",
+                        "Error", JOptionPane.ERROR_MESSAGE);
+            } else {
+                Component[] c1 = cPanel.getComponents();
+                for (int i = 0; i < c1.length; i++) {
+                    cPanel.remove(c1[i]);
+                }
+                JScrollPane qz = new JScrollPane();
+
+                List<Quiz> quizzes = Quiz.readFile("src/quizList.txt");
+                for (Quiz quiz : Objects.requireNonNull(quizzes)) {
+                    if (quiz.getQuizName().equalsIgnoreCase(quizTitle)) {
+                        if (!quiz.isRandomized()) {
+                            int pos = 0;
+                            int j = 0;
+                            for (int i = 0; i < quiz.getQuestions().size(); i++) {
+                                studentSubmissions.add(quiz.getQuestions().get(i));
+                                studentSubmissions.add(quiz.getCorrectAnswers().get(i));
+                                cPanel.add(new JLabel(quiz.getQuestions().get(i))); // print question
+                                quizChoice.add(new JRadioButton(quiz.getAnswerChoices().get(pos)));
+                                cPanel.add(quizChoice.get(j));
+                                j++;
+                                quizChoice.add(new JRadioButton(quiz.getAnswerChoices().get(pos + 1))); // print option
+                                cPanel.add(quizChoice.get(j));
+                                j++;
+                                quizChoice.add(new JRadioButton(quiz.getAnswerChoices().get(pos + 2))); // print option
+                                cPanel.add(quizChoice.get(j));
+                                j++;
+                                quizChoice.add(new JRadioButton(quiz.getAnswerChoices().get(pos + 3))); // print option
+                                cPanel.add(quizChoice.get(j));
+                                j++;
+                                pos += 4;
+                            }
+                        } else {
+                            int pos = 0;
+                            int j = 0;
+                            int index = 0;
+                            List<Integer> randomNumsQ = generateRandomNums(0, quiz.getQuestions().size(),
+                                    quiz.getQuestions().size());
+                            for (Integer integer : randomNumsQ) {
+                                index = integer;
+                                studentSubmissions.add(quiz.getQuestions().get(index));
+                                studentSubmissions.add(quiz.getCorrectAnswers().get(index));
+                                cPanel.add(new JLabel(quiz.getQuestions().get(index)));
+                                // randomize order of answer choices when printed to terminal
+                                pos = index * 4;
+                                // for each question, a list of random numbers is required
+                                List<Integer> randomNumsA = generateRandomNums(1, 3, 3);
+                                quizChoice.add(new JRadioButton(quiz.getAnswerChoices().get(pos)));
+                                cPanel.add(quizChoice.get(j));
+                                j++;
+                                quizChoice.add(new JRadioButton(quiz.getAnswerChoices().get(pos + randomNumsA.get(0))));
+                                cPanel.add(quizChoice.get(j));
+                                j++;
+                                quizChoice.add(new JRadioButton(quiz.getAnswerChoices().get(pos + randomNumsA.get(1))));
+                                cPanel.add(quizChoice.get(j));
+                                j++;
+                                quizChoice.add(new JRadioButton(quiz.getAnswerChoices().get(pos + randomNumsA.get(2))));
+                                cPanel.add(quizChoice.get(j));
+                                j++;
+                            }
                         }
                     }
                 }
+                cPanel.revalidate();
+                cPanel.repaint();
+                Component[] s = sPanel.getComponents();
+                for (int i = 0; i < s.length; i++) {
+                    sPanel.remove(s[i]);
+                }
+                sPanel.add(submitBtn3);
+                sPanel.revalidate();
+                sPanel.repaint();
             }
-            cPanel.revalidate();
-            cPanel.repaint();
-            Component[] s = sPanel.getComponents();
-            for (int i = 0; i < s.length; i++) {
-                sPanel.remove(s[i]);
-            }
-            sPanel.add(submitBtn3);
-            sPanel.revalidate();
-            sPanel.repaint();
         }
     }
-    protected static void submitBtn3Function(ArrayList<String> array) throws IOException {
-        four.start();
-        PrintWriter pw = new PrintWriter("src/StudentSubmissions.txt");
-        for (String s : array) {
-            pw.write(s + "\n");
+
+    protected static void submitBtn3Function(List<String> array) throws IOException {
+        synchronized (lock) {
+            PrintWriter pw = new PrintWriter("src/StudentSubmissions.txt");
+            for (String s : array) {
+                pw.write(s + "\n");
+            }
+            pw.close();
+            JOptionPane.showMessageDialog(null, "Thank you!",
+                    "Done", JOptionPane.INFORMATION_MESSAGE);
+            System.exit(0);
         }
-        pw.close();
-        JOptionPane.showMessageDialog(null, "Thank you!",
-                "Done", JOptionPane.INFORMATION_MESSAGE);
-        System.exit(0);
     }
+
     protected static void submitBtn4Function() {
     }
+
     @Override
     public void actionPerformed(ActionEvent e) {
         String optionSelected =
@@ -330,9 +328,8 @@ public class StudentGUI extends JComponent implements ActionListener {
         }
     }
 
-    public static ArrayList<Integer> generateRandomNums(int start, int end, int length) {
-        four.start();
-        ArrayList<Integer> list = new ArrayList<>();
+    public static List<Integer> generateRandomNums(int start, int end, int length) {
+        List<Integer> list = Collections.synchronizedList(new ArrayList<>());
         int num = 0;
         while (list.size() != length) {
             num = (int) (Math.random() * end + start);
@@ -346,13 +343,14 @@ public class StudentGUI extends JComponent implements ActionListener {
         }
         return list;
     }
-    public static ArrayList<String> readFile(String fileName) {
+
+    public static List<String> readFile(String fileName) {
         synchronized (lock) {
             if (!new File(fileName).exists()) {
                 return null;
             }
             try (BufferedReader bfr = new BufferedReader(new FileReader(fileName))) {
-                ArrayList<String> fileContents = new ArrayList<>();
+                List<String> fileContents = Collections.synchronizedList(new ArrayList<>());
                 String line = new String("");
                 while ((line = bfr.readLine()) != null) {
                     fileContents.add(line);
@@ -379,30 +377,4 @@ public class StudentGUI extends JComponent implements ActionListener {
         }
     }
 
-    public void run() throws InterruptedException {
-        try {
-            one.join();
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        }
-
-        try {
-            two.join();
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        }
-
-        try {
-            three.join();
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        }
-
-        try {
-            four.join();
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        }
-
-    }
 }
