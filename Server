@@ -15,21 +15,21 @@ import java.util.List;
 /**
  * Server.java
  *
- * @author Ritu Atreyas
+ * @author Ritu Atreyas and Samhitha Mupharaphu
  * @version 12/13/2021
  */
-
 public class Server implements Runnable {
 
     private final Socket socket;
     // variables are private and static
+    //stored data in a List and made thread safe by using Collections class
     private static List<String> studentUsernames = Collections.synchronizedList(new ArrayList<>());
     private static List<String> studentPasswords = Collections.synchronizedList(new ArrayList<>());
     private static List<String> teacherUsernames = Collections.synchronizedList(new ArrayList<>());
     private static List<String> teacherPasswords = Collections.synchronizedList(new ArrayList<>());
 
-    // https://www.baeldung.com/java-synchronized-collections
-    // https://docs.oracle.com/javase/8/docs/api/java/util/Collections.html#synchronizedList-java.util.List-
+    //https://www.baeldung.com/java-synchronized-collections
+    //https://docs.oracle.com/javase/8/docs/api/java/util/Collections.html#synchronizedList-java.util.List-
     private final static Object lock = new Object();
 
     public Server(Socket socket) {
@@ -37,7 +37,10 @@ public class Server implements Runnable {
     }
 
     public static void main(String[] args) throws IOException {
-        readAllFiles(); // updates field variables (Lists) with preexisting data that is stored in text files
+        //makes sure that data is stored concurrently and in the correct order if two users are accessing at same time
+        synchronized (lock) {
+            readAllFiles(); // updates contents of ArrayList if there is data that is stored in text file
+        }
         ServerSocket serverSocket = new ServerSocket(8081);
         while (true) {
             Socket socket = serverSocket.accept();
@@ -47,32 +50,31 @@ public class Server implements Runnable {
     }
 
     public void run() {
+
         BufferedReader reader = null;
         try {
             reader = new BufferedReader(new InputStreamReader(socket.getInputStream()));
             PrintWriter writer = new PrintWriter(socket.getOutputStream());
 
             String command = reader.readLine();
-            // call the appropriate method with the appropriate parameters
             if (command == null) {
             } else if (command.equals("1")) {
-                createAccount(false);
+                createAccount(reader, writer, false);
             } else if (command.equals("2")) {
-                createAccount(true);
+                createAccount(reader, writer, true);
             } else if (command.equals("3")) {
-                editAccount(false);
+                editAccount(reader, writer, false);
             } else if (command.equals("4")) {
-                editAccount(true);
+                editAccount(reader, writer, true);
             } else if (command.equals("5")) {
-                deleteAccount(false);
+                deleteAccount(reader, writer, false);
             } else if (command.equals("6")) {
-                deleteAccount(true);
+                deleteAccount(reader, writer, true);
             } else if (command.equals("7")) {
-                signIn(false);
+                signIn(reader, writer, false);
             } else if (command.equals("8")) {
-                signIn(true);
+                signIn(reader, writer, true);
             } else {
-                // invalid input error message
                 JOptionPane.showMessageDialog(null, "Invalid input!",
                         "Card", JOptionPane.ERROR_MESSAGE);
             }
@@ -82,7 +84,7 @@ public class Server implements Runnable {
 
     }
 
-    private void createAccount(boolean isTeacher) throws IOException {
+    private void createAccount(BufferedReader reader, PrintWriter writer, boolean isTeacher) throws IOException {
         String user = JOptionPane.showInputDialog(null, "Enter the username.");
         if (user == null || user.trim().length() == 0) {
             JOptionPane.showMessageDialog(null, "Invalid input!",
@@ -97,22 +99,26 @@ public class Server implements Runnable {
             return;
         }
 
+        //makes sure that data is stored concurrently and in the correct order if two users are accessing at same time
         synchronized (lock) {
             boolean exists = false;
-
             List<String> usernames = isTeacher ? Server.teacherUsernames : Server.studentUsernames;
             List<String> passwords = isTeacher ? Server.teacherPasswords : Server.studentPasswords;
             if (usernames != null && usernames.size() > 0) {
                 for (String username : usernames) {
                     if (username.equals(user)) {
-                        JOptionPane.showMessageDialog(null, "Username already exists!",
+                        JOptionPane.showMessageDialog(null,
+                                "Username already exists, please try again!",
                                 "Card", JOptionPane.ERROR_MESSAGE);
-                        return;
+                        exists = true;
+                        break;
                     }
                 }
-                usernames.add(user);
-                passwords.add(pass);
-                updateFiles();
+                if (!exists) {
+                    usernames.add(user);
+                    passwords.add(pass);
+                    updateFiles();
+                }
             } else {
                 // can add without checking whether username already exists
                 // if size of studentUsernames ArrayList is 0
@@ -128,6 +134,7 @@ public class Server implements Runnable {
     }
 
     private void updateFiles() {
+        //makes sure that data is stored concurrently and in the correct order if two users are accessing at same time
         synchronized (lock) {
             // update files
             writeFile(teacherUsernames, "src/TeacherUsernames.txt");
@@ -137,21 +144,23 @@ public class Server implements Runnable {
         }
     }
 
-    private void editAccount(boolean isTeacher) throws IOException {
-        String userOld = JOptionPane.showInputDialog(null, "Enter the username of the account you'd like to edit.");
+    private void editAccount(BufferedReader reader, PrintWriter writer, boolean isTeacher) throws IOException {
+        String userOld = JOptionPane.showInputDialog(null,
+                "Enter the username of the account you'd like to edit.");
         if (userOld == null || userOld.trim().length() == 0) {
             JOptionPane.showMessageDialog(null, "Invalid input!",
                     "Card", JOptionPane.ERROR_MESSAGE);
             return;
         }
-
         int index = 0;
         int counter = 0;
         boolean exists = false;
+        //makes sure that data is stored concurrently and in the correct order if two users are accessing at same time
         synchronized (lock) {
             List<String> usernames = isTeacher ? Server.teacherUsernames : Server.studentUsernames;
             List<String> passwords = isTeacher ? Server.teacherPasswords : Server.studentPasswords;
             if (usernames != null && usernames.size() > 0) {
+                counter = 0;
                 for (String username : usernames) {
                     if (username.equals(userOld)) {
                         exists = true;
@@ -176,27 +185,29 @@ public class Server implements Runnable {
             usernames.remove(userOld);
             passwords.remove(index);
             updateFiles();
-            createAccount(isTeacher);
+            createAccount(reader, writer, isTeacher);
             JOptionPane.showMessageDialog(null, "Successfully edited!",
                     "Card", JOptionPane.INFORMATION_MESSAGE);
         }
     }
 
-    private void deleteAccount(boolean isTeacher) throws IOException {
-        String userOld = JOptionPane.showInputDialog(null, "Enter the username of the account you'd like to edit.");
+    private void deleteAccount(BufferedReader reader, PrintWriter writer, boolean isTeacher) throws IOException {
+        String userOld = JOptionPane.showInputDialog(null,
+                "Enter the username of the account you'd like to delete.");
         if (userOld == null || userOld.trim().length() == 0) {
             JOptionPane.showMessageDialog(null, "Invalid input!",
                     "Card", JOptionPane.ERROR_MESSAGE);
             return;
         }
-
         int index = 0;
         int counter = 0;
         boolean exists = false;
+        //makes sure that data is stored concurrently and in the correct order if two users are accessing at same time
         synchronized (lock) {
             List<String> usernames = isTeacher ? Server.teacherUsernames : Server.studentUsernames;
             List<String> passwords = isTeacher ? Server.teacherPasswords : Server.studentPasswords;
             if (usernames != null && usernames.size() > 0) {
+                counter = 0;
                 for (String username : usernames) {
                     if (username.equals(userOld)) {
                         exists = true;
@@ -226,7 +237,7 @@ public class Server implements Runnable {
         }
     }
 
-    private void signIn(boolean isTeacher) throws IOException {
+    private void signIn(BufferedReader reader, PrintWriter writer, boolean isTeacher) throws IOException {
         String user = JOptionPane.showInputDialog(null, "Enter the username.");
         if (user == null || user.trim().length() == 0) {
             JOptionPane.showMessageDialog(null, "Invalid input!",
@@ -242,6 +253,7 @@ public class Server implements Runnable {
         }
         // check whether ArrayList is null to avoid NullPointerException
         boolean exists = false;
+        //makes sure that data is stored concurrently and in the correct order if two users are accessing at same time
         synchronized (lock) {
             List<String> usernames = isTeacher ? Server.teacherUsernames : Server.studentUsernames;
             List<String> passwords = isTeacher ? Server.teacherPasswords : Server.studentPasswords;
@@ -275,10 +287,10 @@ public class Server implements Runnable {
                                         Student.main(null);
                                     }
                                 } else {
-                                    JOptionPane.showMessageDialog(null, "Password doesn't match! " +
+                                    JOptionPane.showMessageDialog(null,
+                                            "Password doesn't match! " +
                                                     "Unable to sign in.",
                                             "Card", JOptionPane.INFORMATION_MESSAGE);
-                                    return;
                                 }
                                 break; // break out of for loop after calling main method in Student.java or
                                 // printing error message
@@ -296,6 +308,7 @@ public class Server implements Runnable {
     }
 
     private static void writeFile(List<String> list, String fileName) {
+        //makes sure that data is stored concurrently and in the correct order if two users are accessing at same time
         synchronized (lock) {
             try (PrintWriter pw = new PrintWriter(new FileWriter(fileName))) {
                 for (String line : list) {
@@ -308,6 +321,7 @@ public class Server implements Runnable {
     }
 
     public static ArrayList<String> readFile(String fileName) {
+        //makes sure that data is stored concurrently and in the correct order if two users are accessing at same time
         synchronized (lock) {
             try (BufferedReader bfr = new BufferedReader(new FileReader(fileName))) {
                 ArrayList<String> fileContents = new ArrayList<>();
@@ -340,6 +354,7 @@ public class Server implements Runnable {
     }
 
     private static void readAllFiles() {
+        //makes sure that data is stored concurrently and in the correct order if two users are accessing at same time
         synchronized (lock) {
             File studentUsernamesFile = new File("src/StudentUsernames.txt");
             File studentPasswordsFile = new File("src/StudentPasswords.txt");
