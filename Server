@@ -9,30 +9,29 @@ import java.io.PrintWriter;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 
 public class Server implements Runnable {
 
     private final Socket socket;
     // variables are private and static
-    private static ArrayList<String> studentUsernames = new ArrayList<>();
-    private static ArrayList<String> studentPasswords = new ArrayList<>();
-    private static ArrayList<String> teacherUsernames = new ArrayList<>();
-    private static ArrayList<String> teacherPasswords = new ArrayList<>();
+    private static List<String> studentUsernames = Collections.synchronizedList(new ArrayList<>());
+    private static List<String> studentPasswords = Collections.synchronizedList(new ArrayList<>());
+    private static List<String> teacherUsernames = Collections.synchronizedList(new ArrayList<>());
+    private static List<String> teacherPasswords = Collections.synchronizedList(new ArrayList<>());
 
+    //https://www.baeldung.com/java-synchronized-collections
+    //https://docs.oracle.com/javase/8/docs/api/java/util/Collections.html#synchronizedList-java.util.List-
     private final static Object lock = new Object();
-
-    private static Thread one = new Thread();
-    private static Thread two = new Thread();
-    private static Thread three = new Thread();
-    private static Thread four = new Thread();
 
     public Server(Socket socket) {
         this.socket = socket;
     }
 
-    public static void main(String[] args) throws IOException {
+    public static void main(String[] args) throws IOException, InterruptedException {
         readAllFiles(); // updates contents of ArrayList if there is data that is stored in text file
-        ServerSocket serverSocket = new ServerSocket(8081);
+        ServerSocket serverSocket = new ServerSocket(4242);
         while (true) {
             Socket socket = serverSocket.accept();
             Server server = new Server(socket);
@@ -41,26 +40,6 @@ public class Server implements Runnable {
     }
 
     public void run() {
-        try {
-            one.join();
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        }
-        try {
-            two.join();
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        }
-        try {
-            three.join();
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        }
-        try {
-            four.join();
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        }
 
         BufferedReader reader = null;
         try {
@@ -93,30 +72,9 @@ public class Server implements Runnable {
             e.printStackTrace();
         }
 
-        try {
-            one.join();
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        }
-        try {
-            two.join();
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        }
-        try {
-            three.join();
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        }
-        try {
-            four.join();
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        }
     }
 
     private void createAccount(BufferedReader reader, PrintWriter writer, boolean isTeacher) throws IOException {
-        one.start();;
         String user = JOptionPane.showInputDialog(null, "Enter the username.");
         if (user == null || user.trim().length() == 0) {
             JOptionPane.showMessageDialog(null, "Invalid input!",
@@ -131,31 +89,33 @@ public class Server implements Runnable {
             return;
         }
 
-        boolean exists = false;
-        ArrayList<String> usernames = isTeacher ? Server.teacherUsernames : Server.studentUsernames;
-        ArrayList<String> passwords = isTeacher ? Server.teacherPasswords : Server.studentPasswords;
-        if (usernames != null && usernames.size() > 0) {
-            for (String username : usernames) {
-                if (username.equals(user)) {
-                    exists = true;
-                    break;
+        synchronized (lock) {
+            boolean exists = false;
+
+            List<String> usernames = isTeacher ? Server.teacherUsernames : Server.studentUsernames;
+            List<String> passwords = isTeacher ? Server.teacherPasswords : Server.studentPasswords;
+            if (usernames != null && usernames.size() > 0) {
+                for (String username : usernames) {
+                    if (username.equals(user)) {
+                        exists = true;
+                        break;
+                    }
+                }
+                if (!exists) {
+                    usernames.add(user);
+                    passwords.add(pass);
+                    updateFiles();
+                }
+            } else {
+                // can add without checking whether username already exists
+                // if size of studentUsernames ArrayList is 0
+                if (usernames != null) {
+                    usernames.add(user);
+                    passwords.add(pass);
+                    updateFiles();
                 }
             }
-            if (!exists) {
-                usernames.add(user);
-                passwords.add(pass);
-                updateFiles();
-            }
-        } else {
-            // can add without checking whether username already exists
-            // if size of studentUsernames ArrayList is 0
-            if (usernames != null) {
-                usernames.add(user);
-                passwords.add(pass);
-                updateFiles();
-            }
         }
-
     }
     private void updateFiles() {
         synchronized (lock) {
@@ -167,8 +127,6 @@ public class Server implements Runnable {
         }
     }
     private void editAccount(BufferedReader reader, PrintWriter writer, boolean isTeacher) throws IOException {
-        two.start();;
-
         String userOld = JOptionPane.showInputDialog(null, "Enter the username of the account you'd like to edit.");
         if (userOld == null || userOld.trim().length() == 0) {
             JOptionPane.showMessageDialog(null, "Invalid input!",
@@ -178,32 +136,32 @@ public class Server implements Runnable {
         int index = 0;
         int counter = 0;
         boolean exists = false;
-        ArrayList<String> usernames = isTeacher ? Server.teacherUsernames : Server.studentUsernames;
-        ArrayList<String> passwords = isTeacher ? Server.teacherPasswords : Server.studentPasswords;
-        if (usernames != null && usernames.size() > 0) {
-            counter = 0;
-            for (String username : usernames) {
-                if (username.equals(userOld)) {
-                    exists = true;
-                    index = counter; // index of oldUser
-                    break;
+        synchronized (lock) {
+            List<String> usernames = isTeacher ? Server.teacherUsernames : Server.studentUsernames;
+            List<String> passwords = isTeacher ? Server.teacherPasswords : Server.studentPasswords;
+            if (usernames != null && usernames.size() > 0) {
+                counter = 0;
+                for (String username : usernames) {
+                    if (username.equals(userOld)) {
+                        exists = true;
+                        index = counter; // index of oldUser
+                        break;
+                    }
+                    counter++;
                 }
-                counter++;
-            }
-            if (!exists) {
+                if (!exists) {
+                    return;
+                }
+            } else { // if the ArrayList is null or the length is 0
                 return;
             }
-        } else { // if the ArrayList is null or the length is 0
-            return;
-        }
 
-        usernames.remove(userOld);
-        passwords.remove(index);
-        createAccount(reader, writer, isTeacher);
+            usernames.remove(userOld);
+            passwords.remove(index);
+            createAccount(reader, writer, isTeacher);
+        }
     }
     private void deleteAccount(BufferedReader reader, PrintWriter writer, boolean isTeacher) throws IOException {
-        three.start();;
-
         String userOld = JOptionPane.showInputDialog(null, "Enter the username of the account you'd like to delete.");
         if (userOld == null || userOld.trim().length() == 0) {
             JOptionPane.showMessageDialog(null, "Invalid input!",
@@ -213,31 +171,31 @@ public class Server implements Runnable {
         int index = 0;
         int counter = 0;
         boolean exists = false;
-        ArrayList<String> usernames = isTeacher ? Server.teacherUsernames : Server.studentUsernames;
-        ArrayList<String> passwords = isTeacher ? Server.teacherPasswords : Server.studentPasswords;
-        if (usernames != null && usernames.size() > 0) {
-            counter = 0;
-            for (String username : usernames) {
-                if (username.equals(userOld)) {
-                    exists = true;
-                    index = counter; // index of oldUser
-                    break;
+        synchronized (lock) {
+            List<String> usernames = isTeacher ? Server.teacherUsernames : Server.studentUsernames;
+            List<String> passwords = isTeacher ? Server.teacherPasswords : Server.studentPasswords;
+            if (usernames != null && usernames.size() > 0) {
+                counter = 0;
+                for (String username : usernames) {
+                    if (username.equals(userOld)) {
+                        exists = true;
+                        index = counter; // index of oldUser
+                        break;
+                    }
+                    counter++;
                 }
-                counter++;
-            }
-            if (!exists) {
+                if (!exists) {
+                    return;
+                }
+            } else { // if the ArrayList is null or the length is 0
                 return;
             }
-        } else { // if the ArrayList is null or the length is 0
-            return;
-        }
 
-        usernames.remove(userOld);
-        passwords.remove(index);
+            usernames.remove(userOld);
+            passwords.remove(index);
+        }
     }
     private void signIn(BufferedReader reader, PrintWriter writer, boolean isTeacher) throws IOException {
-        four.start();
-
         String user = JOptionPane.showInputDialog(null, "Enter the username.");
         if (user == null || user.trim().length() == 0) {
             JOptionPane.showMessageDialog(null, "Invalid input!",
@@ -253,46 +211,47 @@ public class Server implements Runnable {
         }
         // check whether ArrayList is null to avoid NullPointerException
         boolean exists = false;
-        ArrayList<String> usernames = isTeacher ? Server.teacherUsernames : Server.studentUsernames;
-        ArrayList<String> passwords = isTeacher ? Server.teacherPasswords : Server.studentPasswords;
-        int counter;
-        int indexUsername = 0;
-        int indexPassword = 0;
-        boolean usernameExists = false;
-        if (usernames != null && usernames.size() > 0) {
-            counter = 0;
-            for (String username : usernames) {
-                if (username.equals(user)) {
-                    usernameExists = true;
-                    indexUsername = counter;
-                    break;
+        synchronized (lock) {
+            List<String> usernames = isTeacher ? Server.teacherUsernames : Server.studentUsernames;
+            List<String> passwords = isTeacher ? Server.teacherPasswords : Server.studentPasswords;
+            int counter;
+            int indexUsername = 0;
+            int indexPassword = 0;
+            boolean usernameExists = false;
+            if (usernames != null && usernames.size() > 0) {
+                counter = 0;
+                for (String username : usernames) {
+                    if (username.equals(user)) {
+                        usernameExists = true;
+                        indexUsername = counter;
+                        break;
+                    }
+                    counter++;
                 }
-                counter++;
-            }
-            if (usernameExists) {
-                if (passwords != null && passwords.size() > 0) {
-                    counter = 0;
-                    for (String password : passwords) {
-                        if (pass.equals(password)) {
-                            indexPassword = counter;
-                            if (indexUsername == indexPassword) {
-                                if (isTeacher) {
-                                    Teacher.main(null);
-                                } else {
-                                    Student.main(null);
+                if (usernameExists) {
+                    if (passwords != null && passwords.size() > 0) {
+                        counter = 0;
+                        for (String password : passwords) {
+                            if (pass.equals(password)) {
+                                indexPassword = counter;
+                                if (indexUsername == indexPassword) {
+                                    if (isTeacher) {
+                                        Teacher.main(null);
+                                    } else {
+                                        Student.main(null);
+                                    }
                                 }
+                                break; // break out of for loop after calling main method in Student.java or
+                                // printing error message
                             }
-                            break; // break out of for loop after calling main method in Student.java or
-                            // printing error message
+                            counter++;
                         }
-                        counter++;
                     }
                 }
-            }
-        } // no usernames exist, no need to prompt user again
-
+            } // no usernames exist, no need to prompt user again
+        }
     }
-    private static void writeFile(ArrayList<String> list, String fileName) {
+    private static void writeFile(List<String> list, String fileName) {
         synchronized (lock) {
             try (PrintWriter pw = new PrintWriter(new FileWriter(fileName))) {
                 for (String line : list) {
@@ -320,19 +279,19 @@ public class Server implements Runnable {
         }
     }
 
-    public static ArrayList<String> getStudentUsernames() {
+    public static List<String> getStudentUsernames() {
         return studentUsernames;
     }
 
-    public static ArrayList<String> getStudentPasswords() {
+    public static List<String> getStudentPasswords() {
         return studentPasswords;
     }
 
-    public static ArrayList<String> getTeacherUsernames() {
+    public static List<String> getTeacherUsernames() {
         return teacherUsernames;
     }
 
-    public static ArrayList<String> getTeacherPasswords() {
+    public static List<String> getTeacherPasswords() {
         return teacherPasswords;
     }
 
