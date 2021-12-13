@@ -50,7 +50,7 @@ public class Student extends JComponent implements ActionListener {
         frame.setTitle("Student");
         Container content = frame.getContentPane();
         content.setLayout(new BorderLayout());
-        opt1 = new JRadioButton("Would you like to -Take a quiz?"); //
+        opt1 = new JRadioButton("Would you like to -Take a quiz?"); 
         opt2 = new JRadioButton("Would you like to -View your graded quiz/quizzes?");
         ButtonGroup bgroup = new ButtonGroup();
         bgroup.add(opt1);
