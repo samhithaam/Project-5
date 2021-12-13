@@ -4,12 +4,12 @@ import java.awt.event.ActionListener;
 import java.io.FileNotFoundException;
 import java.util.ArrayList;
 import java.io.PrintWriter;
-import java.io.IOException;
 import javax.swing.*;
 import javax.swing.JFrame;
 import java.io.*;
 import java.util.Collections;
 import java.util.List;
+import java.util.Objects;
 
 public class Teacher {
 
@@ -99,7 +99,6 @@ public class Teacher {
                     validInput = true;
                 }
             }
-            validInput = false;
             exit = JOptionPane.showConfirmDialog(null,
                     "Would you like to enter another question?", "CONTINUE",
                     JOptionPane.YES_NO_OPTION);
@@ -117,19 +116,16 @@ public class Teacher {
                 quizTitle = JOptionPane.showInputDialog(null,
                         "Enter quiz title:",
                         "QUIZ TITLE", JOptionPane.QUESTION_MESSAGE);
-                int noQuiz = 0;
-                for (int i = 0; i < teacherSubmissions.size(); i++) {
-                    if (teacherSubmissions.get(i).equals(quizTitle)) {
-                        noQuiz++;
+                for (String teacherSubmission : teacherSubmissions) {
+                    if (teacherSubmission.equals(quizTitle)) {
+                        validInput = true;
+                        break;
                     }
                 }
-                if (noQuiz == 0) {
+                if (!validInput) {
                     JOptionPane.showMessageDialog(null, "There is no quiz with that title!",
                             "QUIZ TO EDIT NOT FOUND",
                             JOptionPane.INFORMATION_MESSAGE);
-                }
-                if (noQuiz > 0) {
-                    validInput = true;
                 }
             }
 
@@ -140,32 +136,11 @@ public class Teacher {
                         int editQuestion = JOptionPane.showConfirmDialog(null,
                                 "Would you like to edit the question?", "EDIT",
                                 JOptionPane.YES_NO_OPTION);
-                        if (editQuestion == JOptionPane.NO_OPTION) {
-                            invalidInput = true;
-                        } else if (editQuestion == JOptionPane.YES_OPTION) {
+                        if (editQuestion == JOptionPane.YES_OPTION) {
                             String newQuestion = JOptionPane.showInputDialog(null,
                                     "What is the new question?",
                                     "NEW QUESTION", JOptionPane.QUESTION_MESSAGE);
                             teacherSubmissions.set(i + 2, newQuestion);
-                            invalidInput = true;
-                        }
-                        invalidInput = false;
-                        if (JOptionPane.showConfirmDialog(null,
-                                "Would you like to edit the randomization?", "EDIT RANDOMIZE",
-                                JOptionPane.YES_NO_OPTION) == JOptionPane.YES_OPTION) {
-                            while (!invalidInput) {
-                                int newRandom = JOptionPane.showConfirmDialog(null,
-                                        "What is the new randomization option?", "EDITED RANDOMIZE",
-                                        JOptionPane.YES_NO_OPTION);
-                                if (newRandom == JOptionPane.NO_OPTION) {
-                                    teacherSubmissions.set(i + 1, "n");
-                                    invalidInput = true;
-                                } else if (newRandom == JOptionPane.YES_OPTION) {
-                                    teacherSubmissions.set(i + 1, "y");
-                                    invalidInput = true;
-                                }
-                            }
-                            invalidInput = false;
                         }
                         boolean editMore = false;
                         int editAnswers = JOptionPane.showConfirmDialog(null,
@@ -234,16 +209,26 @@ public class Teacher {
                                 }
                             }
                         }
-                        JOptionPane.showMessageDialog(null, "Quiz Edited!",
-                                "QUIZ EDITED MESSAGE",
-                                JOptionPane.INFORMATION_MESSAGE);
-                        invalidInput = true;
-
+                        try {
+                            if (teacherSubmissions.get(i + 9).equals("y") || teacherSubmissions.get(i + 9).equals("n")) {
+                                JOptionPane.showMessageDialog(null, "Quiz Edited!",
+                                        "QUIZ EDITED MESSAGE",
+                                        JOptionPane.INFORMATION_MESSAGE);
+                                return;
+                            }
+                            else
+                                i += 6;
+                        } catch (IndexOutOfBoundsException e) {
+                            JOptionPane.showMessageDialog(null, "Quiz Edited!",
+                                    "QUIZ EDITED MESSAGE",
+                                    JOptionPane.INFORMATION_MESSAGE);
+                            return;
+                        }
                     }
                 }
             }
             exit = JOptionPane.showConfirmDialog(null,
-                    "Would you like to edit another quiz", "CONTINUE",
+                    "Would you like to edit another quiz?", "CONTINUE",
                     JOptionPane.YES_NO_OPTION);
         } while (exit == JOptionPane.YES_OPTION);
         JOptionPane.showMessageDialog(null, "Successfully Edited!");
@@ -255,13 +240,17 @@ public class Teacher {
                 "Enter the name of the quiz you want to delete:",
                 "DELETE QUIZ NAME", JOptionPane.QUESTION_MESSAGE);
         boolean quizExists = false;
+        int counter = 0;
         for (int i = 0; i < teacherSubmissions.size(); i++) {
             if (teacherSubmissions.get(i).equalsIgnoreCase(deleteQuizName)) {
                 quizExists = true;
-                for (int j = 0; j < 8; j++) {
-                    teacherSubmissions.remove(i);
+                while (i < teacherSubmissions.size() && (!teacherSubmissions.get(i).equals("y")
+                        || !teacherSubmissions.get(counter).equals("n"))) {
+                    if (teacherSubmissions.get(i) != null) {
+                        teacherSubmissions.remove(i);
+                    }
                 }
-                JOptionPane.showMessageDialog(null, "Quiz Deleted!");
+                JOptionPane.showMessageDialog(null, "Quiz deleted!");
             }
         }
         if (!quizExists) {
@@ -376,7 +365,7 @@ public class Teacher {
         viewSubmissionsButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                ArrayList<String> studentSubmissions = Student.readFile("src/StudentSubmissions.txt");
+                List<String> studentSubmissions = Student.readFile("src/StudentSubmissions.txt");
                 if (studentSubmissions == null || studentSubmissions.size() == 0) {
                     JOptionPane.showMessageDialog(null,
                             "There are no student submissions.",
@@ -430,14 +419,14 @@ public class Teacher {
             File teacherSubmissionsFile = new File("src/quizList.txt");
             // if file exists, call readFile()
             if (teacherSubmissionsFile.exists()) {
-                teacherSubmissions.addAll(Student.readFile("src/quizList.txt"));
+                if (Student.readFile("src/quizList.txt") != null)
+                    teacherSubmissions.addAll(Objects.requireNonNull(Student.readFile("src/quizList.txt")));
             }
         }
     }
 
-    public static void main(String[] args) throws IOException {
+    public static void main(String[] args) {
         updateArrayList();
         createMenu();
     }
-
-    }
+}
