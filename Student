@@ -24,8 +24,6 @@ import javax.swing.JScrollPane;
  * @version 12/12/2021
  */
 
-
-//creating basic UI components
 public class Student extends JComponent implements ActionListener {
     private static JButton submitBtn1;
     private static JButton submitBtn2;
@@ -50,7 +48,7 @@ public class Student extends JComponent implements ActionListener {
         frame.setTitle("Student");
         Container content = frame.getContentPane();
         content.setLayout(new BorderLayout());
-        opt1 = new JRadioButton("Would you like to -Take a quiz?"); 
+        opt1 = new JRadioButton("Would you like to -Take a quiz?"); //
         opt2 = new JRadioButton("Would you like to -View your graded quiz/quizzes?");
         ButtonGroup bgroup = new ButtonGroup();
         bgroup.add(opt1);
@@ -224,7 +222,6 @@ public class Student extends JComponent implements ActionListener {
 
     protected static void submitBtn2Function(String quizTitle, List<JRadioButton> quizChoice) throws FileNotFoundException {
         synchronized (lock) {
-            //executes if user does not select any option
             if ("".equals(quizTitle)) {
                 JOptionPane.showMessageDialog(null, "Please make a selection!",
                         "Error", JOptionPane.ERROR_MESSAGE);
@@ -312,7 +309,6 @@ public class Student extends JComponent implements ActionListener {
             JOptionPane.showMessageDialog(null, "Thank you!",
                     "Done", JOptionPane.INFORMATION_MESSAGE);
             System.exit(0);
-            //exits application
         }
     }
 
@@ -335,7 +331,7 @@ public class Student extends JComponent implements ActionListener {
             option2Selected = true;
         }
     }
-// used to randomise order of answer choices.
+
     public static List<Integer> generateRandomNums(int start, int end, int length) {
         List<Integer> list = Collections.synchronizedList(new ArrayList<>());
         int num = 0;
@@ -374,7 +370,6 @@ public class Student extends JComponent implements ActionListener {
             }
         }
     }
-
 
     public static void updateArrayList() {
         synchronized (lock) {
