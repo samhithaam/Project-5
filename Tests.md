@@ -37,7 +37,7 @@ Test cases:
 
 Steps:
 Test 1:
-User launches application.
+  User launches application.
 User selects the ‘Create Quiz’ button.
 User enters a quiz title via the keyboard.
 User selects the ‘no’ option to randomize questions.
