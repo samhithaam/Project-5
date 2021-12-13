@@ -15,10 +15,9 @@ import java.util.List;
 /**
  * Server.java
  *
- * @author Ritu Atreyas
+ * @author Ritu Atreyas and Samhitha Mupharaphu
  * @version 12/13/2021
  */
-
 public class Server implements Runnable {
 
     private final Socket socket;
@@ -30,7 +29,7 @@ public class Server implements Runnable {
 
     // https://www.baeldung.com/java-synchronized-collections
     // https://docs.oracle.com/javase/8/docs/api/java/util/Collections.html#synchronizedList-java.util.List-
-    private final static Object lock = new Object();
+    private static Object lock = new Object();
 
     public Server(Socket socket) {
         this.socket = socket;
@@ -138,7 +137,8 @@ public class Server implements Runnable {
     }
 
     private void editAccount(boolean isTeacher) throws IOException {
-        String userOld = JOptionPane.showInputDialog(null, "Enter the username of the account you'd like to edit.");
+        String userOld = JOptionPane.showInputDialog(null,
+                "Enter the username of the account you'd like to edit.");
         if (userOld == null || userOld.trim().length() == 0) {
             JOptionPane.showMessageDialog(null, "Invalid input!",
                     "Card", JOptionPane.ERROR_MESSAGE);
@@ -183,7 +183,8 @@ public class Server implements Runnable {
     }
 
     private void deleteAccount(boolean isTeacher) throws IOException {
-        String userOld = JOptionPane.showInputDialog(null, "Enter the username of the account you'd like to edit.");
+        String userOld = JOptionPane.showInputDialog(null,
+                "Enter the username of the account you'd like to edit.");
         if (userOld == null || userOld.trim().length() == 0) {
             JOptionPane.showMessageDialog(null, "Invalid input!",
                     "Card", JOptionPane.ERROR_MESSAGE);
@@ -275,7 +276,8 @@ public class Server implements Runnable {
                                         Student.main(null);
                                     }
                                 } else {
-                                    JOptionPane.showMessageDialog(null, "Password doesn't match! " +
+                                    JOptionPane.showMessageDialog(null,
+                                            "Password doesn't match! " +
                                                     "Unable to sign in.",
                                             "Card", JOptionPane.INFORMATION_MESSAGE);
                                     return;
