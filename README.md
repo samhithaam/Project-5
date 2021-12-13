@@ -13,7 +13,7 @@ All five of these classes work with each other in order to allow students and te
 
 COMPILING AND RUNNING: In order to run our program, you need to run Client.java, which will give you the option to create/edit/delete an account, or sign in. After choosing one of the above options, you will have to specify whether you are a student or a teacher. If the user chooses to create/edit/delete an account, the information they input is stored in or removed from an ArrayList. If the user chooses to sign in, and they are successful in doing so, the main method in either Student or Teacher is called. If the user is a student, they are given the option to either take a quiz or view their graded quizzes. If the user is a teacher, they are given the option to either create/edit/delete quizzes, or view and grade student submissions if they exist. 
 
-Note: To help the program smoothly, the user should have the files "quizList.txt", "StudentUsernames.txt", "StudentPasswords.txt", "TeacherUsernames.txt", "TeacherPasswords.txt", "quizOutput.txt", "pointList.txt", and "StudentSubmissions.txt" already created. The teacher and student quiz tools should also be used in full screen mode. 
+Note: To help the program smoothly, the user should have the files "quizList.txt", "StudentUsernames.txt", "StudentPasswords.txt", "TeacherUsernames.txt", "TeacherPasswords.txt", "pointList.txt", and "StudentSubmissions.txt" already created. The teacher and student quiz tools should also be used in full screen mode. 
 
 TESTING: We tested the code by trying all possible input values when prompted and seeing if all output printed as expected. That's when we realized that we needed to add while loops to keep prompting the user for input until input is valid. 
 
