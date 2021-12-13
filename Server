@@ -29,9 +29,9 @@ public class Server implements Runnable {
         this.socket = socket;
     }
 
-    public static void main(String[] args) throws IOException, InterruptedException {
+    public static void main(String[] args) throws IOException {
         readAllFiles(); // updates contents of ArrayList if there is data that is stored in text file
-        ServerSocket serverSocket = new ServerSocket(4242);
+        ServerSocket serverSocket = new ServerSocket(8081);
         while (true) {
             Socket socket = serverSocket.accept();
             Server server = new Server(socket);
@@ -97,6 +97,8 @@ public class Server implements Runnable {
             if (usernames != null && usernames.size() > 0) {
                 for (String username : usernames) {
                     if (username.equals(user)) {
+                        JOptionPane.showMessageDialog(null, "Username already exists, please try again!",
+                                "Card", JOptionPane.ERROR_MESSAGE);
                         exists = true;
                         break;
                     }
@@ -116,6 +118,8 @@ public class Server implements Runnable {
                 }
             }
         }
+        JOptionPane.showMessageDialog(null, "Successfully created!",
+                "Card", JOptionPane.INFORMATION_MESSAGE);
     }
     private void updateFiles() {
         synchronized (lock) {
@@ -126,6 +130,7 @@ public class Server implements Runnable {
             writeFile(teacherPasswords, "src/TeacherPasswords.txt");
         }
     }
+
     private void editAccount(BufferedReader reader, PrintWriter writer, boolean isTeacher) throws IOException {
         String userOld = JOptionPane.showInputDialog(null, "Enter the username of the account you'd like to edit.");
         if (userOld == null || userOld.trim().length() == 0) {
@@ -150,17 +155,27 @@ public class Server implements Runnable {
                     counter++;
                 }
                 if (!exists) {
+                    JOptionPane.showMessageDialog(null, "An account with the username " +
+                                    "you entered does not exist!",
+                            "Card", JOptionPane.ERROR_MESSAGE);
                     return;
                 }
             } else { // if the ArrayList is null or the length is 0
+                JOptionPane.showMessageDialog(null, "An account with the username " +
+                                "you entered does not exist!",
+                        "Card", JOptionPane.ERROR_MESSAGE);
                 return;
             }
 
             usernames.remove(userOld);
             passwords.remove(index);
+            updateFiles();
             createAccount(reader, writer, isTeacher);
+            JOptionPane.showMessageDialog(null, "Successfully edited!",
+                    "Card", JOptionPane.INFORMATION_MESSAGE);
         }
     }
+
     private void deleteAccount(BufferedReader reader, PrintWriter writer, boolean isTeacher) throws IOException {
         String userOld = JOptionPane.showInputDialog(null, "Enter the username of the account you'd like to delete.");
         if (userOld == null || userOld.trim().length() == 0) {
@@ -185,14 +200,23 @@ public class Server implements Runnable {
                     counter++;
                 }
                 if (!exists) {
+                    JOptionPane.showMessageDialog(null, "An account with the username " +
+                                    "you entered does not exist!",
+                            "Card", JOptionPane.ERROR_MESSAGE);
                     return;
                 }
             } else { // if the ArrayList is null or the length is 0
+                JOptionPane.showMessageDialog(null, "An account with the username " +
+                                "you entered does not exist!",
+                        "Card", JOptionPane.ERROR_MESSAGE);
                 return;
             }
 
             usernames.remove(userOld);
             passwords.remove(index);
+            updateFiles();
+            JOptionPane.showMessageDialog(null, "Successfully deleted!",
+                    "Card", JOptionPane.INFORMATION_MESSAGE);
         }
     }
     private void signIn(BufferedReader reader, PrintWriter writer, boolean isTeacher) throws IOException {
@@ -228,7 +252,10 @@ public class Server implements Runnable {
                     }
                     counter++;
                 }
-                if (usernameExists) {
+                if (!usernameExists) {
+                    JOptionPane.showMessageDialog(null, "Username doesn't exist!",
+                            "Card", JOptionPane.INFORMATION_MESSAGE);
+                } else {
                     if (passwords != null && passwords.size() > 0) {
                         counter = 0;
                         for (String password : passwords) {
@@ -240,6 +267,10 @@ public class Server implements Runnable {
                                     } else {
                                         Student.main(null);
                                     }
+                                } else {
+                                    JOptionPane.showMessageDialog(null, "Password doesn't match! " +
+                                                    "Unable to sign in.",
+                                            "Card", JOptionPane.INFORMATION_MESSAGE);
                                 }
                                 break; // break out of for loop after calling main method in Student.java or
                                 // printing error message
@@ -248,7 +279,11 @@ public class Server implements Runnable {
                         }
                     }
                 }
-            } // no usernames exist, no need to prompt user again
+            } else {
+                JOptionPane.showMessageDialog(null, "No users exist in the system!",
+                        "Card", JOptionPane.INFORMATION_MESSAGE);
+                // no usernames exist, no need to prompt user again
+            }
         }
     }
     private static void writeFile(List<String> list, String fileName) {
