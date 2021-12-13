@@ -10,14 +10,19 @@ import java.io.*;
 import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
-
+/**
+ * Teacher.java
+ *
+ * @author Rithvik Thiagu and Samhitha Mupharaphu
+ * @version 12/13/2021
+ */
 public class Teacher {
 
     private static List<String> teacherSubmissions = Collections.synchronizedList(new ArrayList<>());
     private static List<Integer> pointValues = Collections.synchronizedList(new ArrayList<>());
     private static int totalPoints = 0;
 
-    private final static Object lock = new Object();
+    private static Object lock = new Object();
 
     // Calculates and returns the total points earned by the student on all the quizzes
     public static int getTotalPoints() {
@@ -179,7 +184,8 @@ public class Teacher {
                                     teacherSubmissions.set(i + 6, newA4);
                                 }
                                 int editCorrectAnswer = JOptionPane.showConfirmDialog(null,
-                                        "Would you like to edit the correct answer?", "EDIT CORRECT ANSWER",
+                                        "Would you like to edit the correct answer?",
+                                        "EDIT CORRECT ANSWER",
                                         JOptionPane.YES_NO_OPTION);
                                 if (editCorrectAnswer == JOptionPane.YES_OPTION) {
                                     while (!invalidInput) {
@@ -189,10 +195,12 @@ public class Teacher {
                                         if (!(newCorrectAnswer.equalsIgnoreCase(teacherSubmissions.get(i + 3))) &&
                                                 !(newCorrectAnswer.equalsIgnoreCase(teacherSubmissions.get(i + 4)))
                                                 && !(newCorrectAnswer.equalsIgnoreCase(teacherSubmissions.get(i + 5)))
-                                                && !(newCorrectAnswer.equalsIgnoreCase(teacherSubmissions.get(i + 6)))) {
+                                                && !(newCorrectAnswer.equalsIgnoreCase(teacherSubmissions.get(i + 6))))
+                                        {
                                             JOptionPane.showMessageDialog(null,
                                                     "Invalid input. " +
-                                                            "The correct answer must be one of the inputted answer choices",
+                                                            "The correct answer must be " +
+                                                            "one of the inputted answer choices",
                                                     "INVALID EDITED CORRECT ANSWER",
                                                     JOptionPane.INFORMATION_MESSAGE);
                                         } else {
@@ -210,13 +218,13 @@ public class Teacher {
                             }
                         }
                         try {
-                            if (teacherSubmissions.get(i + 9).equals("y") || teacherSubmissions.get(i + 9).equals("n")) {
+                            if (teacherSubmissions.get(i + 9).equals("y") || teacherSubmissions.get(i + 9).equals("n"))
+                            {
                                 JOptionPane.showMessageDialog(null, "Quiz Edited!",
                                         "QUIZ EDITED MESSAGE",
                                         JOptionPane.INFORMATION_MESSAGE);
                                 return;
-                            }
-                            else
+                            } else
                                 i += 6;
                         } catch (IndexOutOfBoundsException e) {
                             JOptionPane.showMessageDialog(null, "Quiz Edited!",
