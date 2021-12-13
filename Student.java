@@ -17,7 +17,16 @@ import javax.swing.JPanel;
 import javax.swing.JRadioButton;
 import javax.swing.JScrollPane;
 
-public class StudentGUI extends JComponent implements ActionListener {
+/**
+ * Student.java
+ *
+ * @author Serena Gauri Ronanki
+ * @version 12/12/2021
+ */
+
+
+//creating basic UI components
+public class Student extends JComponent implements ActionListener {
     private static JButton submitBtn1;
     private static JButton submitBtn2;
     private static JButton submitBtn3;
@@ -43,7 +52,7 @@ public class StudentGUI extends JComponent implements ActionListener {
         frame.setTitle("Student");
         Container content = frame.getContentPane();
         content.setLayout(new BorderLayout());
-        opt1 = new JRadioButton("Would you like to -Take a quiz?");
+        opt1 = new JRadioButton("Would you like to -Take a quiz?"); //
         opt2 = new JRadioButton("Would you like to -View your graded quiz/quizzes?");
         bgroup = new ButtonGroup();
         bgroup.add(opt1);
@@ -94,7 +103,9 @@ public class StudentGUI extends JComponent implements ActionListener {
         sPanel.add(submitBtn1);
         content.add(sPanel, BorderLayout.SOUTH);
         ArrayList<JRadioButton> quizName = new ArrayList<JRadioButton>();
-        ArrayList studentSubmissions = new ArrayList<>();
+        ArrayList studentSubmissions = new ArrayList<>(); // stores student's answer choices after taking quiz in the form-
+        // [question #1, answer to Q1, student answer, question #2, answer to Q2, ...]
+        // updated in printQuiz, accessed in viewGradedQuiz()
         ArrayList<JRadioButton> quizChoice = new ArrayList<JRadioButton>();
         submitBtn1.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
@@ -127,7 +138,7 @@ public class StudentGUI extends JComponent implements ActionListener {
                     }
                     m++;
                     if (m == 4) {
-                        studentSubmissions.add(k, answer);
+                        studentSubmissions.add(k, answer); // student answer , correct answer
                         m = 0;
                         k += 3;
                     }
@@ -161,10 +172,11 @@ public class StudentGUI extends JComponent implements ActionListener {
                     System.exit(0);
                     return;
                 }
+                // print all quiz names so student can choose the quiz they want to take
                 for (Quiz quiz : Objects.requireNonNull(Quiz.readFile("src/quizList.txt"))) {
                     quizName.add(new JRadioButton(quiz.getQuizName()));
                     quizName.get(i).setText(quiz.getQuizName());
-                    cPanel.add(quizName.get(i));
+                    cPanel.add(quizName.get(i)); // display all quiz names so student can choose the quiz they want to take
                     i++;
                 }
                 cPanel.revalidate();
@@ -174,6 +186,7 @@ public class StudentGUI extends JComponent implements ActionListener {
                 sPanel.revalidate();
                 sPanel.repaint();
             }
+           // Students can view their graded quizzes, the points for each individual question, and their total score
         } else if (option2Selected) {
             cPanel.remove(opt1);
             cPanel.remove(opt2);
@@ -182,11 +195,11 @@ public class StudentGUI extends JComponent implements ActionListener {
             synchronized (lock) {
                 if (studentSubmissions == null || studentSubmissions.size() == 0) {
                     JOptionPane.showMessageDialog(null, "There aren't any submissions yet!",
-                            "No graded Quiz", JOptionPane.INFORMATION_MESSAGE);
+                            "No submissions", JOptionPane.INFORMATION_MESSAGE);
                     System.exit(0);
                     return;
                 }
-                List<String> points = readFile("src/pointList.txt"); //arrays list contains points student earn for each q
+                List<String> points = readFile("src/pointList.txt"); // contains points student earn for each question
                 if (points == null || points.size() == 0) {
                     JOptionPane.showMessageDialog(null, "Your teacher hasn't graded your quiz(zes) yet!",
                             "No graded Quiz", JOptionPane.INFORMATION_MESSAGE);
@@ -230,6 +243,7 @@ public class StudentGUI extends JComponent implements ActionListener {
                 List<Quiz> quizzes = Quiz.readFile("src/quizList.txt");
                 for (Quiz quiz : Objects.requireNonNull(quizzes)) {
                     if (quiz.getQuizName().equalsIgnoreCase(quizTitle)) {
+                        //executes if quiz is not randomized
                         if (!quiz.isRandomized()) {
                             int pos = 0;
                             int j = 0;
@@ -251,6 +265,7 @@ public class StudentGUI extends JComponent implements ActionListener {
                                 j++;
                                 pos += 4;
                             }
+                            //executes if quiz is randomized
                         } else {
                             int pos = 0;
                             int j = 0;
@@ -261,21 +276,21 @@ public class StudentGUI extends JComponent implements ActionListener {
                                 index = integer;
                                 studentSubmissions.add(quiz.getQuestions().get(index));
                                 studentSubmissions.add(quiz.getCorrectAnswers().get(index));
-                                cPanel.add(new JLabel(quiz.getQuestions().get(index)));
+                                cPanel.add(new JLabel(quiz.getQuestions().get(index))); // print question
                                 // randomize order of answer choices when printed to terminal
                                 pos = index * 4;
                                 // for each question, a list of random numbers is required
                                 List<Integer> randomNumsA = generateRandomNums(1, 3, 3);
-                                quizChoice.add(new JRadioButton(quiz.getAnswerChoices().get(pos)));
+                                quizChoice.add(new JRadioButton(quiz.getAnswerChoices().get(pos))); // print option
                                 cPanel.add(quizChoice.get(j));
                                 j++;
-                                quizChoice.add(new JRadioButton(quiz.getAnswerChoices().get(pos + randomNumsA.get(0))));
+                                quizChoice.add(new JRadioButton(quiz.getAnswerChoices().get(pos + randomNumsA.get(0))));//print option
                                 cPanel.add(quizChoice.get(j));
                                 j++;
-                                quizChoice.add(new JRadioButton(quiz.getAnswerChoices().get(pos + randomNumsA.get(1))));
+                                quizChoice.add(new JRadioButton(quiz.getAnswerChoices().get(pos + randomNumsA.get(1))));//print option
                                 cPanel.add(quizChoice.get(j));
                                 j++;
-                                quizChoice.add(new JRadioButton(quiz.getAnswerChoices().get(pos + randomNumsA.get(2))));
+                                quizChoice.add(new JRadioButton(quiz.getAnswerChoices().get(pos + randomNumsA.get(2))));//print option
                                 cPanel.add(quizChoice.get(j));
                                 j++;
                             }
@@ -297,7 +312,7 @@ public class StudentGUI extends JComponent implements ActionListener {
 
     protected static void submitBtn3Function(List<String> array) throws IOException {
         synchronized (lock) {
-            PrintWriter pw = new PrintWriter("src/StudentSubmissions.txt");
+            PrintWriter pw = new PrintWriter("src/StudentSubmissions.txt");  // update StudentSubmissions text file
             for (String s : array) {
                 pw.write(s + "\n");
             }
