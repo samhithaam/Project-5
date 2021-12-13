@@ -296,3 +296,102 @@ Test Status: Passed.
 
 # Server.java and Client.java (Ritu)
 Test cases:
+
+Test 1:
+User launches application.
+User enters a host name via the keyboard.
+User enters a port number via the keyboard.
+User enters ‘1’ via the keyboard to create a student account.
+Student enters a username via the keyboard.
+Student enters a password via the keyboard. 
+User enters ‘7’ to sign in to a student account.
+Expected result: Application displays the student quiz tool.
+Test Status: Passed
+
+Test 2:
+User launches application.
+User enters an invalid host name via the keyboard.
+User enters an invalid port number via the keyboard.
+Expected result: Application displays an error message for not being able to connect due to an invalid hostname or port number.
+Test Status: Passed. 
+
+Test 3:
+User launches application.
+User enters a host name via the keyboard.
+User enters a port number via the keyboard.
+User enters ‘2’ via the keyboard to create a teacher account.
+Teacher enters a username via the keyboard.
+Teacher enters a password via the keyboard. 
+Teacher enters ‘8’ to sign in to a student account.
+Expected result: Application displays the teacher quiz tool.
+Test Status: Passed
+
+Test 4:
+User launches application.
+User enters a host name via the keyboard.
+User enters a port number via the keyboard.
+User enters ‘3’ via the keyboard to edit a student account.
+Student enters a username that does not exist via the keyboard.
+Expected result: Application displays an error message for invalid username.
+Test Status: Passed
+
+Test 5:
+User launches application.
+User enters a host name via the keyboard.
+User enters a port number via the keyboard.
+User enters ‘4’ via the keyboard to edit a student account.
+Teacher enters a username that does not exist via the keyboard.
+Expected result: Application displays an error message for invalid username.
+Test Status: Passed
+
+Test 6:
+User launches application.
+User enters a host name via the keyboard.
+User enters a port number via the keyboard.
+User enters ‘6’ via the keyboard to delete a teacher account.
+Teacher enters a username that does not exist via the keyboard.
+Expected result: Application displays an error message for deleting an account that does not exist.
+Test Status: Passed
+
+Test 7:
+User launches application.
+User enters a host name via the keyboard.
+User enters a port number via the keyboard.
+User enters ‘5’ via the keyboard to delete a student account.
+Student enters a username via the keyboard.
+Student enters a password via the keyboard.
+Expected result: Application displays a confirmation message for deleting an account 
+Test Status: Passed
+
+Test 8:
+User launches application.
+User enters a host name via the keyboard.
+User enters a port number via the keyboard.
+User enters ‘6’ via the keyboard to delete a teacher account.
+Teacher enters a username via the keyboard.
+Teacher enters a password via the keyboard.
+Expected result: Application displays a confirmation message for deleting an account 
+Test Status: Passed
+
+Test 9:
+User launches application.
+User enters a host name via the keyboard.
+User enters a port number via the keyboard.
+User enters ‘3’ via the keyboard to edit a student account.
+Student enters a username via the keyboard.
+Student enters a password via the keyboard.
+Expected result: Application displays a confirmation message for editing an account 
+Test Status: Passed
+
+Test 10:
+User launches application.
+User enters a host name via the keyboard.
+User enters a port number via the keyboard.
+User enters ‘4’ via the keyboard to edit a student account.
+Teacher enters a username via the keyboard.
+Teacher enters a password via the keyboard.
+Expected result: Application displays a confirmation message for editing an account 
+Test Status: Passed
+
+
+
