@@ -9,13 +9,13 @@ import java.net.UnknownHostException;
 /**
  * Client.java
  *
- * @author Ritu Atreyas
+ * @author Ritu Atreyas and Samhitha Mupharaphu
  * @version 12/13/2021
  */
 
 public class Client {
 
-    private final static Object lock = new Object();
+    private static Object lock = new Object();
 
     public static synchronized void connectClient() throws IOException {
         //one.start();
