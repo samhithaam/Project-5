@@ -11,6 +11,13 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 
+/**
+ * Teacher.java
+ *
+ * @author Ritu Atreyas and Rithvik Thiagu
+ * @version 12/13/2021
+ */
+
 public class Teacher {
 
     private static List<String> teacherSubmissions = Collections.synchronizedList(new ArrayList<>());
@@ -308,7 +315,9 @@ public class Teacher {
         pw.close();
     }
 
+    //Creates the main quiz menu with interactive menu
     public static void createMenu() {
+        //Creates the main screen with a JFrame and JPanels
         JFrame jf = new JFrame("Teacher Quiz Tool");
         jf.setVisible(true);
         jf.setSize(600, 400);
@@ -321,7 +330,7 @@ public class Teacher {
         JLabel instructions = new JLabel("Select an Option Below");
         panel.add(instructions);
         content.add(panel, BorderLayout.LINE_START);
-
+        //JButtons create the buttons on the screen.
         JButton createButton = new JButton("Create Quiz");
         panel.add(createButton);
 
@@ -340,6 +349,7 @@ public class Teacher {
         JButton exitButton = new JButton("Exit");
         panel.add(exitButton);
 
+        //Develops the functionality for each button with ActionListeners by calling the methods for each button
         createButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
@@ -362,11 +372,13 @@ public class Teacher {
             }
         });
 
+        //Reads the Student Submissions file to allow teachers to view submissions
         viewSubmissionsButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
                 List<String> studentSubmissions = Student.readFile("src/StudentSubmissions.txt");
                 if (studentSubmissions == null || studentSubmissions.size() == 0) {
+                    //Displays an error message if no student submissions are available
                     JOptionPane.showMessageDialog(null,
                             "There are no student submissions.",
                             "No Submissions Message",
@@ -396,6 +408,7 @@ public class Teacher {
             }
         });
 
+        //Creates the exit button which displays a message and ends the program
         exitButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
@@ -413,7 +426,7 @@ public class Teacher {
         });
 
     }
-
+    
     public static void updateArrayList() {
         synchronized (lock) {
             File teacherSubmissionsFile = new File("src/quizList.txt");
@@ -424,7 +437,7 @@ public class Teacher {
             }
         }
     }
-
+    //Runs the Quiz Tool
     public static void main(String[] args) {
         updateArrayList();
         createMenu();
