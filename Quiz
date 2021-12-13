@@ -20,6 +20,7 @@ public class Quiz {
     // non static field variables, initialized in default constructor
     private String quizName;
     private boolean randomized;
+    // List format in order to implement concurrency to store data
     private List<String> questions = Collections.synchronizedList(new ArrayList<>());
     private List<String> answerChoices = Collections.synchronizedList(new ArrayList<>());
     private List<String> correctAnswers = Collections.synchronizedList(new ArrayList<>());
@@ -55,6 +56,7 @@ public class Quiz {
     }
 
     public static ArrayList<Quiz> readFile(String fileName) {
+        //makes sure that data is stored concurrently and in the correct order if two users are accessing at same time
         synchronized (lock) {
             try (BufferedReader bfr = new BufferedReader(new FileReader(fileName))) {
                 ArrayList<String> fileContents = new ArrayList<>();
@@ -227,6 +229,7 @@ public class Quiz {
 
 
     public static void updateArrayList() {
+        //makes sure that data is stored concurrently and in the correct order if two users are accessing at same time
         synchronized (lock) {
             File quizListFile = new File("src/quizList.txt");
             if (quizListFile.exists()) {
