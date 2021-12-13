@@ -9,15 +9,16 @@ import java.net.UnknownHostException;
 /**
  * Client.java
  *
- * @author Ritu Atreyas and Samhitha Mupharaphu
+ * @author Ritu Atreyas
  * @version 12/13/2021
  */
 
 public class Client {
-    // create a new object to pass through the synchronized blocks
+
     private final static Object lock = new Object();
 
     public static synchronized void connectClient() throws IOException {
+        //one.start();
         String hostName = JOptionPane.showInputDialog(null, "Enter the host name.",
                 "localhost");
         if (hostName == null || hostName.trim().length() == 0) {
@@ -46,51 +47,48 @@ public class Client {
         try {
             boolean toContinue = true;
             while (toContinue) {
-                //makes sure that data is stored concurrently and in the correct order if two users are accessing at same time
-                synchronized (lock) {
-                    Socket socket = new Socket(hostName, portNo);
-                    BufferedReader reader = new BufferedReader(new InputStreamReader(socket.getInputStream()));
-                    PrintWriter writer = new PrintWriter(socket.getOutputStream());
-                    String str = new String("");
-                    boolean success = false;
-                    while (!success) {
-                        str = JOptionPane.showInputDialog(null, """
-                                        What would you like to do?
-                                        1. Create Student account.
-                                        2. Create Teacher account.
-                                        3. Edit Student account.
-                                        4. Edit Teacher account.
-                                        5. Delete Student account.
-                                        6. Delete Teacher account.
-                                        7. Sign in (Student account).
-                                        8. Sign in (Teacher account).""",
-                                "Statistics Card", JOptionPane.QUESTION_MESSAGE);
-                        if (str == null || str.trim().length() == 0) {
-                            JOptionPane.showMessageDialog(null, "You did not input anything!",
-                                    "Statistics Card", JOptionPane.ERROR_MESSAGE);
-                        } else {
-                            success = true;
-                        }
-                    }
-
-                    writer.write(str);
-                    writer.println();
-                    writer.flush();
-
-                    if (str.equals("7") || str.equals("8")) {
-                        writer.close();
-                        reader.close();
-                        break;
-
-                    }
-                    String shouldContinue = JOptionPane.showInputDialog(null, "Do you want to continue?",
-                            "Continue?", JOptionPane.QUESTION_MESSAGE);
-                    if (shouldContinue == null || shouldContinue.equalsIgnoreCase("yes")) {
+                Socket socket = new Socket(hostName, portNo);
+                BufferedReader reader = new BufferedReader(new InputStreamReader(socket.getInputStream()));
+                PrintWriter writer = new PrintWriter(socket.getOutputStream());
+                String str = new String("");
+                boolean success = false;
+                while (!success) {
+                    str = JOptionPane.showInputDialog(null, """
+                                    What would you like to do?
+                                    1. Create Student account.
+                                    2. Create Teacher account.
+                                    3. Edit Student account.
+                                    4. Edit Teacher account.
+                                    5. Delete Student account.
+                                    6. Delete Teacher account.
+                                    7. Sign in (Student account).
+                                    8. Sign in (Teacher account).""",
+                            "Statistics Card", JOptionPane.QUESTION_MESSAGE);
+                    if (str == null || str.trim().length() == 0) {
+                        JOptionPane.showMessageDialog(null, "You did not input anything!",
+                                "Statistics Card", JOptionPane.ERROR_MESSAGE);
                     } else {
-                        toContinue = false;
-                        writer.close();
-                        reader.close();
+                        success = true;
                     }
+                }
+
+                writer.write(str);
+                writer.println();
+                writer.flush();
+
+                if (str.equals("7") || str.equals("8")) {
+                    writer.close();
+                    reader.close();
+                    break;
+
+                }
+                String shouldContinue = JOptionPane.showInputDialog(null, "Do you want to continue?",
+                        "Continue?", JOptionPane.QUESTION_MESSAGE);
+                if (shouldContinue == null || shouldContinue.equalsIgnoreCase("yes")) {
+                } else {
+                    toContinue = false;
+                    writer.close();
+                    reader.close();
                 }
             }
         } catch (UnknownHostException e) {
