@@ -6,14 +6,12 @@ import java.io.PrintWriter;
 import java.net.Socket;
 import java.net.UnknownHostException;
 
-public class Client implements Runnable{
-
-    private static Thread one = new Thread();
+public class Client {
 
     private final static Object lock = new Object();
 
-    public static void connectClient() throws IOException {
-        one.start();
+    public static synchronized void connectClient() throws IOException {
+        //one.start();
         String hostName = JOptionPane.showInputDialog(null, "Enter the host name.",
                 "localhost");
         if (hostName == null || hostName.trim().length() == 0) {
@@ -82,15 +80,6 @@ public class Client implements Runnable{
         } catch (UnknownHostException e) {
             JOptionPane.showMessageDialog(null, "Unable to connect!",
                     "Statistics Card", JOptionPane.INFORMATION_MESSAGE);
-        }
-    }
-
-    @Override
-    public void run() {
-        try {
-            one.join();
-        } catch (InterruptedException e) {
-            e.printStackTrace();
         }
     }
 
