@@ -1,5 +1,7 @@
 import java.io.*;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 
 /**
  * Quiz.java
@@ -14,13 +16,13 @@ public class Quiz {
     // each element is a Quiz object and each Quiz object stores the quizName, whether or not that quiz is randomized,
     // an ArrayList of all the questions, an ArrayList of all the answer choices,
     // and an ArrayList of all the correct answers
-    private static ArrayList<Quiz> quizzes = new ArrayList<>();
+    private static List<Quiz> quizzes = Collections.synchronizedList(new ArrayList<>());
     // non static field variables, initialized in default constructor
     private String quizName;
     private boolean randomized;
-    private ArrayList<String> questions;
-    private ArrayList<String> answerChoices;
-    private ArrayList<String> correctAnswers;
+    private List<String> questions = Collections.synchronizedList(new ArrayList<>());
+    private List<String> answerChoices = Collections.synchronizedList(new ArrayList<>());
+    private List<String> correctAnswers = Collections.synchronizedList(new ArrayList<>());
 
     private final static Object lock = new Object();
 
@@ -175,7 +177,7 @@ public class Quiz {
         }
     }
 
-    public static ArrayList<Quiz> getQuizzes() {
+    public static List<Quiz> getQuizzes() {
         return quizzes;
     }
 
@@ -187,19 +189,19 @@ public class Quiz {
         return randomized;
     }
 
-    public ArrayList<String> getQuestions() {
+    public List<String> getQuestions() {
         return questions;
     }
 
-    public ArrayList<String> getAnswerChoices() {
+    public List<String> getAnswerChoices() {
         return answerChoices;
     }
 
-    public ArrayList<String> getCorrectAnswers() {
+    public List<String> getCorrectAnswers() {
         return correctAnswers;
     }
 
-    public static void setQuizzes(ArrayList<Quiz> quizzes) {
+    public static void setQuizzes(List<Quiz> quizzes) {
         Quiz.quizzes = quizzes;
     }
 
@@ -211,15 +213,15 @@ public class Quiz {
         this.randomized = randomized;
     }
 
-    public void setQuestions(ArrayList<String> questions) {
+    public void setQuestions(List<String> questions) {
         this.questions = questions;
     }
 
-    public void setAnswerChoices(ArrayList<String> answerChoices) {
+    public void setAnswerChoices(List<String> answerChoices) {
         this.answerChoices = answerChoices;
     }
 
-    public void setCorrectAnswers(ArrayList<String> correctAnswers) {
+    public void setCorrectAnswers(List<String> correctAnswers) {
         this.correctAnswers = correctAnswers;
     }
 
