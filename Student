@@ -20,13 +20,13 @@ import javax.swing.JScrollPane;
 /**
  * Student.java
  *
- * @author Serena Gauri Ronanki and Samhitha Mupharaphu
+ * @author Serena Gauri Ronanki
  * @version 12/12/2021
  */
 
 
 //creating basic UI components
-public class StudentGUI extends JComponent implements ActionListener {
+public class Student extends JComponent implements ActionListener {
     private static JButton submitBtn1;
     private static JButton submitBtn2;
     private static JButton submitBtn3;
@@ -36,10 +36,8 @@ public class StudentGUI extends JComponent implements ActionListener {
     static boolean option2Selected;
     private static JPanel cPanel;
     private static JPanel sPanel;
-    // Stored data in List format in order to implement concurrency to store data
     private static List<String> studentSubmissions = Collections.synchronizedList(new ArrayList<>());
 
-    // create a new object to pass through the synchronized blocks
     private final static Object lock = new Object();
 
     public static void main(String[] args) {
@@ -52,7 +50,7 @@ public class StudentGUI extends JComponent implements ActionListener {
         frame.setTitle("Student");
         Container content = frame.getContentPane();
         content.setLayout(new BorderLayout());
-        opt1 = new JRadioButton("Would you like to -Take a quiz?"); //
+        opt1 = new JRadioButton("Would you like to -Take a quiz?"); 
         opt2 = new JRadioButton("Would you like to -View your graded quiz/quizzes?");
         ButtonGroup bgroup = new ButtonGroup();
         bgroup.add(opt1);
@@ -164,10 +162,8 @@ public class StudentGUI extends JComponent implements ActionListener {
             cPanel.remove(opt1);
             cPanel.remove(opt2);
             int i = 0;
-            //makes sure that data is stored concurrently, in the correct order if two users are accessing at same time
             synchronized (lock) {
-                if (readFile("src/quizList.txt") == null
-                        || readFile("src/quizList.txt").size() == 0) {
+                if (readFile("src/quizList.txt") == null || readFile("src/quizList.txt").size() == 0) {
                     JOptionPane.showMessageDialog(null, "There aren't any quizzes yet!",
                             "No Quiz", JOptionPane.INFORMATION_MESSAGE);
                     System.exit(0);
@@ -177,8 +173,7 @@ public class StudentGUI extends JComponent implements ActionListener {
                 for (Quiz quiz : Objects.requireNonNull(Quiz.readFile("src/quizList.txt"))) {
                     quizName.add(new JRadioButton(quiz.getQuizName()));
                     quizName.get(i).setText(quiz.getQuizName());
-                    cPanel.add(quizName.get(i));
-                    // display all quiz names so student can choose the quiz they want to take
+                    cPanel.add(quizName.get(i)); // display all quiz names so student can choose the quiz they want to take
                     i++;
                 }
                 cPanel.revalidate();
@@ -192,8 +187,6 @@ public class StudentGUI extends JComponent implements ActionListener {
         } else {
             cPanel.remove(opt1);
             cPanel.remove(opt2);
-            //makes sure that data is stored concurrently
-            // and in the correct order if two users are accessing at same time
             synchronized (lock) {
                 if (studentSubmissions == null || studentSubmissions.size() == 0) {
                     JOptionPane.showMessageDialog(null, "There aren't any submissions yet!",
@@ -201,11 +194,9 @@ public class StudentGUI extends JComponent implements ActionListener {
                     System.exit(0);
                     return;
                 }
-                List<String> points = readFile("src/pointList.txt");
-                // contains points student earn for each question
+                List<String> points = readFile("src/pointList.txt"); // contains points student earn for each question
                 if (points == null || points.size() == 0) {
-                    JOptionPane.showMessageDialog(null,
-                            "Your teacher hasn't graded your quiz(zes) yet!",
+                    JOptionPane.showMessageDialog(null, "Your teacher hasn't graded your quiz(zes) yet!",
                             "No graded Quiz", JOptionPane.INFORMATION_MESSAGE);
                     System.exit(0);
                     return;
@@ -231,10 +222,9 @@ public class StudentGUI extends JComponent implements ActionListener {
         }
     }
 
-    protected static void submitBtn2Function(String quizTitle, List<JRadioButton> quizChoice)
-            throws FileNotFoundException {
-        //makes sure that data is stored concurrently and in the correct order if two users are accessing at same time
+    protected static void submitBtn2Function(String quizTitle, List<JRadioButton> quizChoice) throws FileNotFoundException {
         synchronized (lock) {
+            //executes if user does not select any option
             if ("".equals(quizTitle)) {
                 JOptionPane.showMessageDialog(null, "Please make a selection!",
                         "Error", JOptionPane.ERROR_MESSAGE);
@@ -286,16 +276,13 @@ public class StudentGUI extends JComponent implements ActionListener {
                                 quizChoice.add(new JRadioButton(quiz.getAnswerChoices().get(pos))); // print option
                                 cPanel.add(quizChoice.get(j));
                                 j++;
-                                quizChoice.add(new JRadioButton(quiz.getAnswerChoices().get(pos + randomNumsA.get(0))));
-                                //print option
+                                quizChoice.add(new JRadioButton(quiz.getAnswerChoices().get(pos + randomNumsA.get(0))));//print option
                                 cPanel.add(quizChoice.get(j));
                                 j++;
-                                quizChoice.add(new JRadioButton(quiz.getAnswerChoices().get(pos + randomNumsA.get(1))));
-                                //print option
+                                quizChoice.add(new JRadioButton(quiz.getAnswerChoices().get(pos + randomNumsA.get(1))));//print option
                                 cPanel.add(quizChoice.get(j));
                                 j++;
-                                quizChoice.add(new JRadioButton(quiz.getAnswerChoices().get(pos + randomNumsA.get(2))));
-                                //print option
+                                quizChoice.add(new JRadioButton(quiz.getAnswerChoices().get(pos + randomNumsA.get(2))));//print option
                                 cPanel.add(quizChoice.get(j));
                                 j++;
                             }
@@ -316,7 +303,6 @@ public class StudentGUI extends JComponent implements ActionListener {
     }
 
     protected static void submitBtn3Function() throws IOException {
-        //makes sure that data is stored concurrently and in the correct order if two users are accessing at same time
         synchronized (lock) {
             PrintWriter pw = new PrintWriter("src/StudentSubmissions.txt");
             for (String studentSubmission : studentSubmissions) {
@@ -326,6 +312,7 @@ public class StudentGUI extends JComponent implements ActionListener {
             JOptionPane.showMessageDialog(null, "Thank you!",
                     "Done", JOptionPane.INFORMATION_MESSAGE);
             System.exit(0);
+            //exits application
         }
     }
 
@@ -348,7 +335,7 @@ public class StudentGUI extends JComponent implements ActionListener {
             option2Selected = true;
         }
     }
-
+// used to randomise order of answer choices.
     public static List<Integer> generateRandomNums(int start, int end, int length) {
         List<Integer> list = Collections.synchronizedList(new ArrayList<>());
         int num = 0;
@@ -366,7 +353,6 @@ public class StudentGUI extends JComponent implements ActionListener {
     }
 
     public static List<String> readFile(String fileName) {
-        //makes sure that data is stored concurrently and in the correct order if two users are accessing at same time
         synchronized (lock) {
             if (!new File(fileName).exists()) {
                 return null;
@@ -391,7 +377,6 @@ public class StudentGUI extends JComponent implements ActionListener {
 
 
     public static void updateArrayList() {
-        //makes sure that data is stored concurrently and in the correct order if two users are accessing at same time
         synchronized (lock) {
             File studentSubmissionsFile = new File("src/StudentSubmissions.txt");
             if (studentSubmissionsFile.exists()) {
