@@ -304,7 +304,7 @@ User enters a port number via the keyboard.
 User enters ‘1’ via the keyboard to create a student account.
 Student enters a username via the keyboard.
 Student enters a password via the keyboard. 
-User enters ‘7’ to sign in to a student account.
+User enters ‘7’ to sign in to a student account, and enters the username and correct corresponding password.
 Expected result: Application displays the student quiz tool.
 Test Status: Passed
 
@@ -312,7 +312,7 @@ Test 2:
 User launches application.
 User enters an invalid host name via the keyboard.
 User enters an invalid port number via the keyboard.
-Expected result: Application displays an error message for not being able to connect due to an invalid hostname or port number.
+Expected result: Application displays an error message.
 Test Status: Passed. 
 
 Test 3:
@@ -322,7 +322,7 @@ User enters a port number via the keyboard.
 User enters ‘2’ via the keyboard to create a teacher account.
 Teacher enters a username via the keyboard.
 Teacher enters a password via the keyboard. 
-Teacher enters ‘8’ to sign in to a student account.
+Teacher enters ‘8’ to sign in to a teacher account, and enters the username and correct corresponding password.
 Expected result: Application displays the teacher quiz tool.
 Test Status: Passed
 
@@ -332,66 +332,34 @@ User enters a host name via the keyboard.
 User enters a port number via the keyboard.
 User enters ‘3’ via the keyboard to edit a student account.
 Student enters a username that does not exist via the keyboard.
-Expected result: Application displays an error message for invalid username.
+Expected result: Application displays an error message.
 Test Status: Passed
 
 Test 5:
 User launches application.
 User enters a host name via the keyboard.
 User enters a port number via the keyboard.
-User enters ‘4’ via the keyboard to edit a student account.
+User enters ‘6’ via the keyboard to delete a teacher account.
 Teacher enters a username that does not exist via the keyboard.
-Expected result: Application displays an error message for invalid username.
+Expected result: Application displays an error message.
 Test Status: Passed
 
 Test 6:
 User launches application.
 User enters a host name via the keyboard.
 User enters a port number via the keyboard.
-User enters ‘6’ via the keyboard to delete a teacher account.
-Teacher enters a username that does not exist via the keyboard.
-Expected result: Application displays an error message for deleting an account that does not exist.
+User enters ‘5’ via the keyboard to delete a student account.
+Student enters a valid username via the keyboard.
+Expected result: Application displays a confirmation message for deleting an account, and the username and password are removed from the corresponding ArrayLists and text files.
 Test Status: Passed
 
 Test 7:
 User launches application.
 User enters a host name via the keyboard.
 User enters a port number via the keyboard.
-User enters ‘5’ via the keyboard to delete a student account.
-Student enters a username via the keyboard.
-Student enters a password via the keyboard.
-Expected result: Application displays a confirmation message for deleting an account 
-Test Status: Passed
-
-Test 8:
-User launches application.
-User enters a host name via the keyboard.
-User enters a port number via the keyboard.
-User enters ‘6’ via the keyboard to delete a teacher account.
-Teacher enters a username via the keyboard.
-Teacher enters a password via the keyboard.
-Expected result: Application displays a confirmation message for deleting an account 
-Test Status: Passed
-
-Test 9:
-User launches application.
-User enters a host name via the keyboard.
-User enters a port number via the keyboard.
 User enters ‘3’ via the keyboard to edit a student account.
-Student enters a username via the keyboard.
-Student enters a password via the keyboard.
-Expected result: Application displays a confirmation message for editing an account 
+Student enters the username of the account they'd like to edit via the keyboard.
+Student enters the new username via the keyboard.
+Student enters the new password via the keyboard.
+Expected result: Application displays a confirmation message for editing an account, and the username and password are changed in the corresponding ArrayLists and text files.
 Test Status: Passed
-
-Test 10:
-User launches application.
-User enters a host name via the keyboard.
-User enters a port number via the keyboard.
-User enters ‘4’ via the keyboard to edit a student account.
-Teacher enters a username via the keyboard.
-Teacher enters a password via the keyboard.
-Expected result: Application displays a confirmation message for editing an account 
-Test Status: Passed
-
-
-
