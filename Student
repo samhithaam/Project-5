@@ -20,7 +20,7 @@ import javax.swing.JScrollPane;
 /**
  * Student.java
  *
- * @author Serena Gauri Ronanki
+ * @author Serena Gauri Ronanki and Samhitha Mupharaphu
  * @version 12/12/2021
  */
 
@@ -36,7 +36,7 @@ public class Student extends JComponent implements ActionListener {
     private static JPanel sPanel;
     private static List<String> studentSubmissions = Collections.synchronizedList(new ArrayList<>());
 
-    private final static Object lock = new Object();
+    private static Object lock = new Object();
 
     public static void main(String[] args) {
         updateArrayList();
@@ -171,7 +171,8 @@ public class Student extends JComponent implements ActionListener {
                 for (Quiz quiz : Objects.requireNonNull(Quiz.readFile("src/quizList.txt"))) {
                     quizName.add(new JRadioButton(quiz.getQuizName()));
                     quizName.get(i).setText(quiz.getQuizName());
-                    cPanel.add(quizName.get(i)); // display all quiz names so student can choose the quiz they want to take
+                    // display all quiz names so student can choose the quiz they want to take
+                    cPanel.add(quizName.get(i));
                     i++;
                 }
                 cPanel.revalidate();
@@ -192,9 +193,11 @@ public class Student extends JComponent implements ActionListener {
                     System.exit(0);
                     return;
                 }
-                List<String> points = readFile("src/pointList.txt"); // contains points student earn for each question
+                // contains points student earn for each question
+                List<String> points = readFile("src/pointList.txt");
                 if (points == null || points.size() == 0) {
-                    JOptionPane.showMessageDialog(null, "Your teacher hasn't graded your quiz(zes) yet!",
+                    JOptionPane.showMessageDialog(null,
+                            "Your teacher hasn't graded your quiz(zes) yet!",
                             "No graded Quiz", JOptionPane.INFORMATION_MESSAGE);
                     System.exit(0);
                     return;
@@ -220,7 +223,8 @@ public class Student extends JComponent implements ActionListener {
         }
     }
 
-    protected static void submitBtn2Function(String quizTitle, List<JRadioButton> quizChoice) throws FileNotFoundException {
+    protected static void submitBtn2Function(String quizTitle, List<JRadioButton> quizChoice)
+            throws FileNotFoundException {
         synchronized (lock) {
             if ("".equals(quizTitle)) {
                 JOptionPane.showMessageDialog(null, "Please make a selection!",
@@ -273,13 +277,16 @@ public class Student extends JComponent implements ActionListener {
                                 quizChoice.add(new JRadioButton(quiz.getAnswerChoices().get(pos))); // print option
                                 cPanel.add(quizChoice.get(j));
                                 j++;
-                                quizChoice.add(new JRadioButton(quiz.getAnswerChoices().get(pos + randomNumsA.get(0))));//print option
+                                quizChoice.add(new JRadioButton(quiz.getAnswerChoices().get(pos + randomNumsA.get(0))));
+                                //print option
                                 cPanel.add(quizChoice.get(j));
                                 j++;
-                                quizChoice.add(new JRadioButton(quiz.getAnswerChoices().get(pos + randomNumsA.get(1))));//print option
+                                quizChoice.add(new JRadioButton(quiz.getAnswerChoices().get(pos + randomNumsA.get(1))));
+                                //print option
                                 cPanel.add(quizChoice.get(j));
                                 j++;
-                                quizChoice.add(new JRadioButton(quiz.getAnswerChoices().get(pos + randomNumsA.get(2))));//print option
+                                quizChoice.add(new JRadioButton(quiz.getAnswerChoices().get(pos + randomNumsA.get(2))));
+                                //print option
                                 cPanel.add(quizChoice.get(j));
                                 j++;
                             }
