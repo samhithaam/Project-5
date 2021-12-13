@@ -30,8 +30,6 @@ public class Student extends JComponent implements ActionListener {
     private static JButton submitBtn1;
     private static JButton submitBtn2;
     private static JButton submitBtn3;
-    private static JButton submitBtn4;
-    private static ButtonGroup bgroup;
     private static JRadioButton opt1;
     private static JRadioButton opt2;
     static boolean option1Selected;
@@ -54,13 +52,13 @@ public class Student extends JComponent implements ActionListener {
         content.setLayout(new BorderLayout());
         opt1 = new JRadioButton("Would you like to -Take a quiz?"); //
         opt2 = new JRadioButton("Would you like to -View your graded quiz/quizzes?");
-        bgroup = new ButtonGroup();
+        ButtonGroup bgroup = new ButtonGroup();
         bgroup.add(opt1);
         bgroup.add(opt2);
         submitBtn1 = new JButton("Submit");
         submitBtn2 = new JButton("Submit");
         submitBtn3 = new JButton("Done");
-        submitBtn4 = new JButton("Submit");
+        JButton submitBtn4 = new JButton("Submit");
         cPanel = new JPanel();
         cPanel.setLayout(new BoxLayout(cPanel, BoxLayout.Y_AXIS));
         cPanel.add(opt1);
@@ -102,11 +100,10 @@ public class Student extends JComponent implements ActionListener {
         sPanel = new JPanel();
         sPanel.add(submitBtn1);
         content.add(sPanel, BorderLayout.SOUTH);
-        ArrayList<JRadioButton> quizName = new ArrayList<JRadioButton>();
-        ArrayList studentSubmissions = new ArrayList<>(); // stores student's answer choices after taking quiz in the form-
+        ArrayList<JRadioButton> quizName = new ArrayList<>();
         // [question #1, answer to Q1, student answer, question #2, answer to Q2, ...]
         // updated in printQuiz, accessed in viewGradedQuiz()
-        ArrayList<JRadioButton> quizChoice = new ArrayList<JRadioButton>();
+        ArrayList<JRadioButton> quizChoice = new ArrayList<>();
         submitBtn1.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                 submitBtn1Function(quizName);
@@ -121,7 +118,7 @@ public class Student extends JComponent implements ActionListener {
                     }
                 }
                 try {
-                    submitBtn2Function(quizTitle, studentSubmissions, quizChoice);
+                    submitBtn2Function(quizTitle, quizChoice);
                 } catch (FileNotFoundException ex) {
                     ex.printStackTrace();
                 }
@@ -144,7 +141,7 @@ public class Student extends JComponent implements ActionListener {
                     }
                 }
                 try {
-                    submitBtn3Function(studentSubmissions);
+                    submitBtn3Function();
                 } catch (IOException ex) {
                     ex.printStackTrace();
                 }
@@ -186,12 +183,10 @@ public class Student extends JComponent implements ActionListener {
                 sPanel.revalidate();
                 sPanel.repaint();
             }
-           // Students can view their graded quizzes, the points for each individual question, and their total score
-        } else if (option2Selected) {
+            // Students can view their graded quizzes, the points for each individual question, and their total score
+        } else {
             cPanel.remove(opt1);
             cPanel.remove(opt2);
-            int k = 0;
-            List<String> studentSubmissions = readFile("src/StudentSubmissions.txt");
             synchronized (lock) {
                 if (studentSubmissions == null || studentSubmissions.size() == 0) {
                     JOptionPane.showMessageDialog(null, "There aren't any submissions yet!",
@@ -227,26 +222,24 @@ public class Student extends JComponent implements ActionListener {
         }
     }
 
-    protected static void submitBtn2Function(String quizTitle, List studentSubmissions,
-                                             List<JRadioButton> quizChoice) throws FileNotFoundException {
+    protected static void submitBtn2Function(String quizTitle, List<JRadioButton> quizChoice) throws FileNotFoundException {
         synchronized (lock) {
             if ("".equals(quizTitle)) {
                 JOptionPane.showMessageDialog(null, "Please make a selection!",
                         "Error", JOptionPane.ERROR_MESSAGE);
             } else {
                 Component[] c1 = cPanel.getComponents();
-                for (int i = 0; i < c1.length; i++) {
-                    cPanel.remove(c1[i]);
+                for (Component component : c1) {
+                    cPanel.remove(component);
                 }
-                JScrollPane qz = new JScrollPane();
 
                 List<Quiz> quizzes = Quiz.readFile("src/quizList.txt");
                 for (Quiz quiz : Objects.requireNonNull(quizzes)) {
                     if (quiz.getQuizName().equalsIgnoreCase(quizTitle)) {
                         //executes if quiz is not randomized
+                        int pos = 0;
+                        int j = 0;
                         if (!quiz.isRandomized()) {
-                            int pos = 0;
-                            int j = 0;
                             for (int i = 0; i < quiz.getQuestions().size(); i++) {
                                 studentSubmissions.add(quiz.getQuestions().get(i));
                                 studentSubmissions.add(quiz.getCorrectAnswers().get(i));
@@ -267,8 +260,6 @@ public class Student extends JComponent implements ActionListener {
                             }
                             //executes if quiz is randomized
                         } else {
-                            int pos = 0;
-                            int j = 0;
                             int index = 0;
                             List<Integer> randomNumsQ = generateRandomNums(0, quiz.getQuestions().size(),
                                     quiz.getQuestions().size());
@@ -300,8 +291,8 @@ public class Student extends JComponent implements ActionListener {
                 cPanel.revalidate();
                 cPanel.repaint();
                 Component[] s = sPanel.getComponents();
-                for (int i = 0; i < s.length; i++) {
-                    sPanel.remove(s[i]);
+                for (Component component : s) {
+                    sPanel.remove(component);
                 }
                 sPanel.add(submitBtn3);
                 sPanel.revalidate();
@@ -310,11 +301,11 @@ public class Student extends JComponent implements ActionListener {
         }
     }
 
-    protected static void submitBtn3Function(List<String> array) throws IOException {
+    protected static void submitBtn3Function() throws IOException {
         synchronized (lock) {
-            PrintWriter pw = new PrintWriter("src/StudentSubmissions.txt");  // update StudentSubmissions text file
-            for (String s : array) {
-                pw.write(s + "\n");
+            PrintWriter pw = new PrintWriter("src/StudentSubmissions.txt");
+            for (String studentSubmission : studentSubmissions) {
+                pw.println(studentSubmission);
             }
             pw.close();
             JOptionPane.showMessageDialog(null, "Thank you!",
@@ -387,9 +378,9 @@ public class Student extends JComponent implements ActionListener {
         synchronized (lock) {
             File studentSubmissionsFile = new File("src/StudentSubmissions.txt");
             if (studentSubmissionsFile.exists()) {
-                studentSubmissions.addAll(readFile("src/StudentSubmissions.txt"));
+                if (readFile("src/StudentSubmissions.txt") != null)
+                    studentSubmissions.addAll(Objects.requireNonNull(readFile("src/StudentSubmissions.txt")));
             }
         }
     }
-
 }
