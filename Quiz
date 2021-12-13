@@ -1,3 +1,5 @@
+package com.project5testing;
+
 import java.io.*;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -6,7 +8,7 @@ import java.util.List;
 /**
  * Quiz.java
  *
- * @author Ritu Atreyas
+ * @author Ritu Atreyas and Samhitha Mupharpahu
  * @version 11/14/2021
  */
 
@@ -24,7 +26,7 @@ public class Quiz {
     private List<String> answerChoices = Collections.synchronizedList(new ArrayList<>());
     private List<String> correctAnswers = Collections.synchronizedList(new ArrayList<>());
 
-    private final static Object lock = new Object();
+    private static Object lock = new Object();
 
     public static void main(String[] args) {
         // can either load contents of quizzes ArrayList using teacherSubmissions ArrayList
@@ -69,7 +71,8 @@ public class Quiz {
 
                 // the index value of the next occurrence of 'y' and 'n' is how we're making sense of teacher input
                 // the number of times 'y' or 'n' shows up in the text file = the number of quizzes there are
-                // what the user inputs for question about randomization is consistent among every quiz (either 'y' or 'n')
+                // what the user inputs for question about randomization is consistent among every quiz
+                // (either 'y' or 'n')
                 ArrayList<Integer> indexOfYN = new ArrayList<>();
                 for (int i = 0; i < fileContents.size(); i++) {
                     if (fileContents.get(i).equalsIgnoreCase("y") ||
@@ -131,7 +134,8 @@ public class Quiz {
                 }
                 // following lines of code are to handle when i + 1 = indexOfY_N.size()
                 // when i + 1 = indexOfY_N.size(), indexOfY_N.get(i + 1) will result in IndexOutOfBoundsException
-                // use fileContents.size() to loop through entire ArrayList as opposed to the next occurrence of 'y' or 'n'
+                // use fileContents.size() to loop through entire ArrayList
+                // as opposed to the next occurrence of 'y' or 'n'
 
                 indexValue = indexOfYN.get(indexOfYN.size() - 1);
                 randomizedLocal = fileContents.get(indexValue).equalsIgnoreCase("y");
